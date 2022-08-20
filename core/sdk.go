@@ -204,8 +204,6 @@ func (c *Sdk) OpenRedPacket(oId string, gesture string) (string, error) {
 
 	result := fmt.Sprintf("你打开%s发的红包(%d/%d) %s\n 领取情况：\n%s\n\n%s", reply.Info.UserName, reply.Info.Got, reply.Info.Count, receiveResult, strings.Join(receiveList, "\n"), reply.Info.Msg)
 
-	c.logger.Logf("open red packet result: %s", string(body))
-
 	return result, nil
 }
 
