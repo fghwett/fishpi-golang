@@ -1,0 +1,11 @@
+fishPi:
+  apiBase: "https://fishpi.cn" # fishpi接口地址前缀 备用域名：https://gaypi.cn
+  userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36"
+  apiKey: "login -> apiKey" # 由login指令生成
+  username: "your login username" # 登录时所使用的用户名
+  password: "your login password" # 登录时所使用的密码 和passwordMd5只需要填写一个
+  passwordMd5: "md5(your login password)" # 登录时是使用的密码小写MD5 和password只需要填写一个
+  mfaCode: "mfa code" # 二次登录验证码 如果没有设置可以置空
+
+settings:
+  wsInterval: 3 # ws断线重连时间间隔
