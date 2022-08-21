@@ -33,7 +33,7 @@
 5. 终端分屏并运行消息发送端
 
    ```shell
-   ./fishpi-golang -con="config.yml" -msg
+   ./fishpi-golang -conf="config.yml" -msg
    ```
 
    ![3.png](docs/3.png)
