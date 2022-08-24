@@ -212,7 +212,9 @@ func (w *WsMsgReply) Msg() string {
 						strings.TrimSpace(str) == "" ||
 						strings.Contains(str, "https://zsh4869.github.io/fishpi.io/?hyd=") ||
 						strings.Contains(str, "extension-message") ||
-						strings.Contains(str, ":sweat_drops:") {
+						strings.Contains(str, ":sweat_drops:") ||
+						strings.Contains(str, "下次更新时间") ||
+						strings.Contains(str, "https://unv-shield.librian.net/api/unv_shield") {
 						continue
 					}
 					ss = append(ss, str)
