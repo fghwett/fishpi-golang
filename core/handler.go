@@ -164,7 +164,7 @@ func (h *Handler) Watch() {
 }
 
 func (h *Handler) handleCommand(cmd string) {
-	if cmd == "0" || cmd == "1" || cmd == "2" || cmd == "3" { // 抢红包 0-普通红包(拼手气 平分) 1-3猜拳红包 4-心跳红包 5-专属红包
+	if cmd == "0" || cmd == "1" || cmd == "2" || cmd == "3" || cmd == "4" || cmd == "5" { // 抢红包 0-普通红包(拼手气 平分) 1-3猜拳红包 4-心跳红包 5-专属红包
 		h.handleReceiveRedPacket(cmd)
 	} else if cmd == "revoke" { // 撤回最近一条消息
 		h.handleRevokeLastMessage()
