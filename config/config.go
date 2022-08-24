@@ -28,7 +28,8 @@ type FishPi struct {
 }
 
 type Settings struct {
-	WsInterval int `yaml:"wsInterval"`
+	WsInterval  int `yaml:"wsInterval"`
+	MsgCacheNum int `yaml:"msgCacheNum"`
 }
 
 func NewConfig(path string) (*Config, error) {

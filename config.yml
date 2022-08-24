@@ -9,3 +9,4 @@ fishPi:
 
 settings:
   wsInterval: 3 # ws断线重连时间间隔
+  msgCacheNum: 20 # 消息缓存数量 用于撤回消息解析

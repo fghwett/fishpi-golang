@@ -3,6 +3,7 @@ package core
 import (
 	"bufio"
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -12,21 +13,24 @@ import (
 )
 
 type Handler struct {
-	oldTopic  string      // 旧标题
-	red       *WsMsgReply // 拼手气红包、平分红包
-	gesture   *WsMsgReply // 猜拳红包
-	heartbeat *WsMsgReply // 心跳红包
-	own       *WsMsgReply // 专属红包
-	lastest   *WsMsgReply // 最近一条消息
+	oldTopic  string        // 旧标题
+	red       *WsMsgReply   // 拼手气红包、平分红包
+	gesture   *WsMsgReply   // 猜拳红包
+	heartbeat *WsMsgReply   // 心跳红包
+	own       *WsMsgReply   // 专属红包
+	lastest   *WsMsgReply   // 最近一条消息
+	cache     []*WsMsgReply // 消息缓存
 
-	sdk    *Sdk
-	logger logger.Logger
+	cacheNum int
+	sdk      *Sdk
+	logger   logger.Logger
 }
 
-func NewHandler(sdk *Sdk, logger logger.Logger) *Handler {
+func NewHandler(cacheNum int, sdk *Sdk, logger logger.Logger) *Handler {
 	h := &Handler{
-		sdk:    sdk,
-		logger: logger,
+		cacheNum: cacheNum,
+		sdk:      sdk,
+		logger:   logger,
 	}
 
 	return h
@@ -53,6 +57,14 @@ func (h *Handler) HandleMsg(data interface{}) {
 			return
 		}
 		h.oldTopic = content
+	} else if msg.Type == WsMsgTypeRevoke {
+		content = fmt.Sprintf("有人撤回了一条消息 消息内容不知道 %s %s", msg.OId, msg.UserAvatarURL210)
+		for _, v := range h.cache {
+			if msg.OId == v.OId {
+				content = fmt.Sprintf("有人撤回了一条消息：%s", v.Msg())
+				break
+			}
+		}
 	}
 
 	h.logger.Log(content)
@@ -75,6 +87,12 @@ func (h *Handler) filterMessage(msg *WsMsgReply) {
 
 	if msg.Type == WsMsgTypeMsg && msg.UserName == h.sdk.username {
 		h.lastest = msg
+
+		h.cache = append(h.cache, msg)
+		if len(h.cache) >= h.cacheNum {
+			removeNum := len(h.cache) - h.cacheNum
+			h.cache = h.cache[removeNum:]
+		}
 	}
 }
 
