@@ -85,13 +85,15 @@ func (h *Handler) filterMessage(msg *WsMsgReply) {
 		return
 	}
 
-	if msg.Type == WsMsgTypeMsg && msg.UserName == h.sdk.username {
-		h.lastest = msg
-
+	if msg.Type == WsMsgTypeMsg {
 		h.cache = append(h.cache, msg)
 		if len(h.cache) >= h.cacheNum {
 			removeNum := len(h.cache) - h.cacheNum
 			h.cache = h.cache[removeNum:]
+		}
+
+		if msg.UserName == h.sdk.username {
+			h.lastest = msg
 		}
 	}
 }
@@ -145,6 +147,8 @@ func (h *Handler) handleCommand(cmd string) {
 		h.handleReceiveRedPacket(cmd)
 	} else if cmd == "revoke" { // 撤回最近一条消息
 		h.handleRevokeLastMessage()
+	} else if cmd == "repeat" { // 重复最近一条消息
+		h.handleRepeatLastMessage()
 	} else {
 		h.logger.Logf("无效指令：%s", cmd)
 	}
@@ -184,4 +188,14 @@ func (h *Handler) handleRevokeLastMessage() {
 		return
 	}
 	h.logger.Log("撤回消息操作成功")
+}
+
+func (h *Handler) handleRepeatLastMessage() {
+	if h.cache == nil || len(h.cache) == 0 {
+		return
+	}
+	msg := h.cache[len(h.cache)-1]
+	if err := h.sdk.SendMsg(msg.Md); err != nil {
+		h.logger.Log(err.Error())
+	}
 }
