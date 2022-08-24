@@ -214,7 +214,8 @@ func (w *WsMsgReply) Msg() string {
 						strings.Contains(str, "extension-message") ||
 						strings.Contains(str, ":sweat_drops:") ||
 						strings.Contains(str, "下次更新时间") ||
-						strings.Contains(str, "https://unv-shield.librian.net/api/unv_shield") {
+						strings.Contains(str, "https://unv-shield.librian.net/api/unv_shield") ||
+						strings.Contains(str, "EXP") {
 						continue
 					}
 					ss = append(ss, str)
