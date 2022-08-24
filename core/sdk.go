@@ -86,6 +86,24 @@ func (c *Sdk) UserLiveness() (float64, error) {
 	return reply.Liveness, nil
 }
 
+// ChatRecordPage 获取消息历史记录按页数
+func (c *Sdk) ChatRecordPage(page int) ([]*ChatRecordPageData, error) {
+	body, err := c.get(c.api.chatRecordPage(page))
+	if err != nil {
+		return nil, err
+	}
+
+	var reply ChatRecordPageReply
+	if err = json.Unmarshal(body, &reply); err != nil {
+		return nil, err
+	}
+	if reply.Code != 0 {
+		return nil, errors.New(reply.Msg)
+	}
+
+	return reply.Data, nil
+}
+
 // UserInfo 获取用户信息
 func (c *Sdk) UserInfo(username string) string {
 	body, err := c.get(c.api.userInfo(username))

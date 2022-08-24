@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sort"
 	"strings"
 	"time"
 
@@ -33,7 +34,31 @@ func NewHandler(cacheNum int, sdk *Sdk, logger logger.Logger) *Handler {
 		logger:   logger,
 	}
 
+	h.init()
 	return h
+}
+
+func (h *Handler) init() {
+	data, err := h.sdk.ChatRecordPage(1)
+	if err != nil {
+		h.logger.Logf("获取历史聊天记录失败 %s", err.Error())
+		return
+	}
+	sort.Slice(data, func(i, j int) bool {
+		return true
+	})
+	for _, v := range data {
+		content := strings.TrimPrefix(strings.TrimSuffix(v.Content, "</p>"), "<p>")
+		h.logger.Logf("%s %s(%s): %s", v.Time[11:], v.UserNickname, v.UserName, content)
+	}
+}
+
+func (h *Handler) addCache(msg *WsMsgReply) {
+	h.cache = append(h.cache, msg)
+	if len(h.cache) >= h.cacheNum {
+		removeNum := len(h.cache) - h.cacheNum
+		h.cache = h.cache[removeNum:]
+	}
 }
 
 func (h *Handler) HandleMsg(data interface{}) {
@@ -86,11 +111,7 @@ func (h *Handler) filterMessage(msg *WsMsgReply) {
 	}
 
 	if msg.Type == WsMsgTypeMsg {
-		h.cache = append(h.cache, msg)
-		if len(h.cache) >= h.cacheNum {
-			removeNum := len(h.cache) - h.cacheNum
-			h.cache = h.cache[removeNum:]
-		}
+		h.addCache(msg)
 
 		if msg.UserName == h.sdk.username {
 			h.lastest = msg

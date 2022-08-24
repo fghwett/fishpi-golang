@@ -446,3 +446,23 @@ type UserMetal struct {
 		Enabled     bool   `json:"enabled"`     // 是否启动
 	} `json:"list"`
 }
+
+// ChatRecordPageReply 历史记录
+type ChatRecordPageReply struct {
+	Msg  string                `json:"msg"`
+	Code int                   `json:"code"`
+	Data []*ChatRecordPageData `json:"data"`
+}
+
+type ChatRecordPageData struct {
+	UserAvatarURL    string `json:"userAvatarURL"`
+	UserAvatarURL20  string `json:"userAvatarURL20"`
+	UserNickname     string `json:"userNickname"`
+	SysMetal         string `json:"sysMetal"`
+	Time             string `json:"time"`
+	OId              string `json:"oId"`
+	UserName         string `json:"userName"`
+	UserAvatarURL210 string `json:"userAvatarURL210"`
+	Content          string `json:"content"`
+	UserAvatarURL48  string `json:"userAvatarURL48"`
+}

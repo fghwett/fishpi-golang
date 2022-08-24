@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 	"net/url"
+	"strconv"
 	"strings"
 )
 
@@ -47,6 +48,15 @@ func (a *Api) revokeMessage(oId string) *url.URL {
 func (a *Api) userCheckedIn() *url.URL {
 	u := *a.u
 	u.Path = "/user/checkedIn"
+	return &u
+}
+
+func (a *Api) chatRecordPage(page int) *url.URL {
+	u := *a.u
+	u.Path = "/chat-room/more"
+	value := u.Query()
+	value.Add("page", strconv.Itoa(page))
+	u.RawQuery = value.Encode()
 	return &u
 }
 
