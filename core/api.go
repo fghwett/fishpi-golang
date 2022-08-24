@@ -38,6 +38,12 @@ func (a *Api) userInfo(username string) *url.URL {
 	return &u
 }
 
+func (a *Api) revokeMessage(oId string) *url.URL {
+	u := *a.u
+	u.Path = fmt.Sprintf("/chat-room/revoke/%s", oId)
+	return &u
+}
+
 func (a *Api) userCheckedIn() *url.URL {
 	u := *a.u
 	u.Path = "/user/checkedIn"

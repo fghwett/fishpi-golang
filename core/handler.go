@@ -17,6 +17,7 @@ type Handler struct {
 	gesture   *WsMsgReply // 猜拳红包
 	heartbeat *WsMsgReply // 心跳红包
 	own       *WsMsgReply // 专属红包
+	lastest   *WsMsgReply // 最近一条消息
 
 	sdk    *Sdk
 	logger logger.Logger
@@ -44,7 +45,7 @@ func (h *Handler) HandleMsg(data interface{}) {
 		return
 	}
 	msg.Parse()
-	h.filterRedPacket(msg)
+	h.filterMessage(msg)
 
 	content := msg.Msg()
 	if msg.Type == WsMsgTypeOnline {
@@ -57,19 +58,23 @@ func (h *Handler) HandleMsg(data interface{}) {
 	h.logger.Log(content)
 }
 
-func (h *Handler) filterRedPacket(msg *WsMsgReply) {
-	if !msg.IsRedPacketMsg() {
+func (h *Handler) filterMessage(msg *WsMsgReply) {
+	if msg.IsRedPacketMsg() {
+		switch msg.RedPackageInfo.Type {
+		case RedPacketTypeSpecify:
+			h.own = msg
+		case RedPacketTypeRockPaperScissors:
+			h.gesture = msg
+		case RedPacketTypeHeartbeat:
+			h.heartbeat = msg
+		default:
+			h.red = msg
+		}
 		return
 	}
-	switch msg.RedPackageInfo.Type {
-	case RedPacketTypeSpecify:
-		h.own = msg
-	case RedPacketTypeRockPaperScissors:
-		h.gesture = msg
-	case RedPacketTypeHeartbeat:
-		h.heartbeat = msg
-	default:
-		h.red = msg
+
+	if msg.Type == WsMsgTypeMsg && msg.UserName == h.sdk.username {
+		h.lastest = msg
 	}
 }
 
@@ -110,6 +115,9 @@ func (h *Handler) Watch() {
 		}
 		recv := strings.Split(string(buf[:m]), "\n")[0]
 		recv = strings.TrimSpace(recv)
+		if recv == "" {
+			continue
+		}
 		go h.handleCommand(recv)
 	}
 }
@@ -117,6 +125,8 @@ func (h *Handler) Watch() {
 func (h *Handler) handleCommand(cmd string) {
 	if cmd == "0" || cmd == "1" || cmd == "2" || cmd == "3" { // 抢红包 0-普通红包(拼手气 平分) 1-3猜拳红包 4-心跳红包 5-专属红包
 		h.handleReceiveRedPacket(cmd)
+	} else if cmd == "revoke" { // 撤回最近一条消息
+		h.handleRevokeLastMessage()
 	} else {
 		h.logger.Logf("无效指令：%s", cmd)
 	}
@@ -144,4 +154,16 @@ func (h *Handler) handleReceiveRedPacket(gesture string) {
 		return
 	}
 	h.logger.Log(result)
+}
+
+func (h *Handler) handleRevokeLastMessage() {
+	if h.lastest == nil {
+		h.logger.Log("您最近还没有讲话")
+		return
+	}
+	if err := h.sdk.RevokeMsg(h.lastest.OId); err != nil {
+		h.logger.Log(err.Error())
+		return
+	}
+	h.logger.Log("撤回消息操作成功")
 }

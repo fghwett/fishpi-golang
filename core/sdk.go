@@ -159,6 +159,29 @@ func (c *Sdk) SendMsg(msg string) error {
 	return nil
 }
 
+// RevokeMsg 聊天室撤回消息
+func (c *Sdk) RevokeMsg(oId string) error {
+	data := &revokeMsgData{
+		ApiKey: c.apiKey,
+		OId:    oId,
+	}
+
+	body, err := c.delete(c.api.revokeMessage(oId), data)
+	if err != nil {
+		return err
+	}
+
+	var reply revokeMsgReply
+	if err = json.Unmarshal(body, &reply); err != nil {
+		return err
+	}
+	if reply.Code != 0 {
+		return fmt.Errorf("revoke msg error, code: %d, msg: %s", reply.Code, reply.Msg)
+	}
+
+	return nil
+}
+
 // OpenRedPacket 打开红包
 func (c *Sdk) OpenRedPacket(oId string, gesture string) (string, error) {
 	data := &openRedPacketData{
@@ -244,6 +267,26 @@ func (c *Sdk) post(u *url.URL, data interface{}) ([]byte, error) {
 	var req *http.Request
 
 	if req, err = http.NewRequest(http.MethodPost, u.String(), bytes.NewReader(param)); err != nil {
+		return nil, err
+	}
+
+	var body []byte
+	if body, err = c.do(req); err != nil {
+		return nil, err
+	}
+
+	return body, nil
+}
+
+func (c *Sdk) delete(u *url.URL, data interface{}) ([]byte, error) {
+	param, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	var req *http.Request
+
+	if req, err = http.NewRequest(http.MethodDelete, u.String(), bytes.NewReader(param)); err != nil {
 		return nil, err
 	}
 

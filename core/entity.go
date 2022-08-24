@@ -19,6 +19,16 @@ type sendMsgData struct {
 	Content string `json:"content"`
 }
 
+type revokeMsgData struct {
+	ApiKey string `json:"apiKey"`
+	OId    string `json:"oId"`
+}
+
+type revokeMsgReply struct {
+	Code int    `json:"code"`
+	Msg  string `json:"msg"`
+}
+
 type openRedPacketData struct {
 	ApiKey  string `json:"apiKey"`
 	OId     string `json:"oId"`
