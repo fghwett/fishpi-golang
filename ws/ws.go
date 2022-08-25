@@ -107,13 +107,10 @@ func (w *ws) Send(msg []byte) {
 }
 
 func (w *ws) write() {
-	ticker := time.NewTicker(3 * time.Minute)
-	defer ticker.Stop()
-
 	for {
 		select {
-		case _ = <-ticker.C:
-			if err := w.client.WriteMessage(websocket.TextMessage, []byte("-hb-")); err != nil {
+		case msg := <-w.sendChan:
+			if err := w.client.WriteMessage(websocket.TextMessage, msg); err != nil {
 				log.Printf("%s write message error: %s", w.addr, err)
 				return
 			}
