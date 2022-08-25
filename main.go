@@ -6,6 +6,7 @@ import (
 	"fishpi/config"
 	"fishpi/core"
 	"fishpi/eventHandler"
+	"fishpi/ice"
 	"fishpi/logger"
 	"fishpi/ws"
 )
@@ -16,6 +17,7 @@ var (
 	login    = flag.Bool("login", false, "是否登录操作(false)")
 	wsMode   = flag.Bool("ws", false, "是否接收消息模式(false)")
 	message  = flag.Bool("msg", false, "是否发送消息模式(false)")
+	iceMode  = flag.Bool("ice", false, "是否开启小冰游戏模式(false)")
 )
 
 func main() {
@@ -85,6 +87,36 @@ func main() {
 			select {
 			case ping := <-c:
 				wsClient.Send([]byte(ping))
+			}
+		}
+	}
+
+	// 小冰游戏
+	if *iceMode {
+
+		// 初始化消息处理器
+		hl := ice.NewCore(conf.Ice.Ck, conf.Ice.Username, conf.Ice.Uid, loger)
+
+		// 初始化事件触发器
+		eh := eventHandler.NewEventHandler("websocket", loger)
+		eh.Sub(eventHandler.WsMsg, hl.HandleMsg)
+		eh.Sub(eventHandler.WsConnected, hl.HandleWsStatusMsg)
+		eh.Sub(eventHandler.WsClosed, hl.HandleWsStatusMsg)
+		eh.Sub(eventHandler.WsReconnectedFail, hl.HandleWsStatusMsg)
+
+		// 连接ws
+		wsClient := ws.NewWs(conf.Ice.Url, conf.Settings.WsInterval, eh, loger)
+
+		if err = wsClient.Start(); err != nil {
+			loger.Logf("websocket连接失败 %s", err)
+			return
+		}
+		c := hl.KeepLive()
+		go hl.Watch()
+		for {
+			select {
+			case msg := <-c:
+				wsClient.Send(msg)
 			}
 		}
 	}

@@ -10,3 +10,9 @@ fishPi:
 settings:
   wsInterval: 3 # ws断线重连时间间隔
   msgCacheNum: 20 # 消息缓存数量 用于撤回消息解析
+
+ice:
+  url: "wss://game.yuis.cc/wss"
+  ck: "your ck"
+  username: "your username"
+  uid: "your uid"
