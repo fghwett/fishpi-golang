@@ -170,6 +170,8 @@ func (h *Handler) handleCommand(cmd string) {
 		h.handleRevokeLastMessage()
 	} else if cmd == "repeat" { // 重复最近一条消息
 		h.handleRepeatLastMessage()
+	} else if cmd == "topic" { // 获取当前话题
+		h.logger.Log(h.oldTopic)
 	} else {
 		h.logger.Logf("无效指令：%s", cmd)
 	}
