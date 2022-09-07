@@ -1,0 +1,1 @@
+go build -o C:\Users\Cong\go\bin\fishpi-golang.exe .
