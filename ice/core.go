@@ -16,7 +16,8 @@ type core struct {
 	username string
 	uid      string
 
-	ch chan []byte
+	ch       chan []byte
+	updateCk func(ck string) error
 
 	logger logger.Logger
 }
@@ -69,6 +70,12 @@ func (c *core) HandleMsg(data interface{}) {
 	if msg.Type == TypeAll {
 		c.logger.Log(m)
 		c.login()
+	} else if msg.Type == TypeSetCK {
+		c.ck = msg.Ck
+		c.logger.Logf("your new ck is: %s", msg.Ck)
+		if err := c.updateCk(msg.Ck); err != nil {
+			c.logger.Logf("update ck config file error, please manual update, %s", msg.Ck)
+		}
 	} else if msg.Type == TypeGameMsg {
 		if msg.VipLv != 0 {
 			c.logger.Logf("%s %s", msg.Level(), m)
@@ -78,6 +85,10 @@ func (c *core) HandleMsg(data interface{}) {
 	} else {
 		c.logger.Log(string(bytes))
 	}
+}
+
+func (c *core) SetUpdateCKFunc(f func(ck string) error) {
+	c.updateCk = f
 }
 
 func (c *core) HandleWsStatusMsg(data interface{}) {
@@ -103,8 +114,20 @@ func (c *core) Watch() {
 		if recv == "" {
 			continue
 		}
+		if strings.HasPrefix(recv, "登录 ") {
+			go c.handleLogin(recv)
+			continue
+		}
 		go c.handleCommand(recv)
 	}
+}
+
+func (c *core) handleLogin(cmd string) {
+	body, _ := json.Marshal(&ExchangeMsg{
+		Type: TypeLogin,
+		Msg:  cmd,
+	})
+	c.ch <- body
 }
 
 func (c *core) handleCommand(cmd string) {

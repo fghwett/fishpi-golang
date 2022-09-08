@@ -96,6 +96,7 @@ func main() {
 
 		// 初始化消息处理器
 		hl := ice.NewCore(conf.Ice.Ck, conf.Ice.Username, conf.Ice.Uid, loger)
+		hl.SetUpdateCKFunc(conf.UpdateCK)
 
 		// 初始化事件触发器
 		eh := eventHandler.NewEventHandler("websocket", loger)

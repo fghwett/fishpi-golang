@@ -62,6 +62,12 @@ func (c *Config) UpdateApiKey(apiKey string) error {
 	return c.save()
 }
 
+func (c *Config) UpdateCK(ck string) error {
+	c.Ice.Ck = ck
+
+	return c.save()
+}
+
 func (c *Config) save() error {
 	body, err := yaml.Marshal(c)
 	if err != nil {

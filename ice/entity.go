@@ -5,6 +5,8 @@ const (
 	TypeSetUser = "setUser" // 登录消息
 	TypeHb      = "hb"      // 保活
 	TypeGameMsg = "gameMsg" // 交互消息
+	TypeSetCK   = "setCK"   // 设置新的Cookie
+	TypeLogin   = "login"   // 登录动作
 )
 
 type ExchangeMsg struct {
