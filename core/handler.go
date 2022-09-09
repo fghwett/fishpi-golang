@@ -45,7 +45,9 @@ func (h *Handler) init() {
 		return
 	}
 	sort.Slice(data, func(i, j int) bool {
-		return true
+		t1, _ := time.Parse("2006-01-02 15:04:05", data[i].Time)
+		t2, _ := time.Parse("2006-01-02 15:04:05", data[j].Time)
+		return t1.Before(t2)
 	})
 	for _, v := range data {
 		content := strings.TrimPrefix(strings.TrimSuffix(v.Content, "</p>"), "<p>")
