@@ -7,6 +7,7 @@ import (
 	"log"
 	"math/rand"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -385,13 +386,15 @@ func (u *UserInfoReply) Parse() {
 }
 
 func (u *UserInfoReply) String() string {
-	info := fmt.Sprintf("%s - %s(%s) %s\n介绍信息：%s\n链接：%s\n角色：%s(%s)\t城市：%s\n积分：%d\t在线%s\n关注数：%d\t被关注数：%d\n",
+	t, _ := strconv.ParseInt(u.OId, 10, 64)
+	info := fmt.Sprintf("%s - %s(%s) %s\n介绍信息：%s\n链接：%s\n角色：%s(%s)\t城市：%s\n积分：%d\t在线%s\n关注数：%d\t被关注数：%d\n注册时间：%s\n",
 		u.UserNo, u.UserNickname, u.UserName, u.OnlineState(),
 		u.UserIntro,
 		u.UserURL,
 		u.UserRole, u.AppRole(), u.UserCity,
 		u.UserPoint, u.OnlineTime(),
-		u.FollowingUserCount, u.FollowerCount)
+		u.FollowingUserCount, u.FollowerCount,
+		time.UnixMilli(t).Format("2006-01-02 15:04:05"))
 	if u.UserMetal != nil {
 		var metals []string
 		for _, v := range u.UserMetal.List {
