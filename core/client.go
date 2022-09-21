@@ -107,5 +107,5 @@ func (c *Client) handleReward() {
 		c.logger.Logf("领取昨日活跃奖励失败 %s", err)
 		return
 	}
-	c.logger.Logf("领到%f积分", point)
+	c.logger.Logf("领到%s积分", point)
 }
