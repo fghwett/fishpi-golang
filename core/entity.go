@@ -202,7 +202,11 @@ func (w *WsMsgReply) Msg() string {
 		result = fmt.Sprintf("当前话题：%s 在线人数：%d", w.Discussing, w.OnlineChatCnt)
 	case WsMsgTypeMsg:
 		if rp := w.RedPackageInfo; rp != nil && rp.Type != "" {
-			result = fmt.Sprintf("%s %s(%s): 我发了个%s 里面有%d积分(%d/%d)", w.Time[11:], w.UserNickname, w.UserName, rp.TypeName(), rp.Money, rp.Got, rp.Count)
+			special := ""
+			if rp.Type == RedPacketTypeSpecify {
+				special = rp.Recivers
+			}
+			result = fmt.Sprintf("%s %s(%s): 我发了个%s%s 里面有%d积分(%d/%d)", w.Time[11:], w.UserNickname, w.UserName, rp.TypeName(), special, rp.Money, rp.Got, rp.Count)
 		} else if strings.Contains(w.Content, "https://www.lingmx.com/card/index2.html") {
 			result = w.decodeWeatherMsg()
 		} else {
