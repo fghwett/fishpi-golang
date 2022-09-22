@@ -90,7 +90,21 @@ type openRedPacketInfo struct {
 	UserName         string `json:"userName"`
 	UserAvatarURL210 string `json:"userAvatarURL210"`
 	Got              int    `json:"got"`
+	Gesture          int    `json:"gesture"`
 	UserAvatarURL48  string `json:"userAvatarURL48"`
+}
+
+func (o *openRedPacketInfo) GestureName() string {
+	switch o.Gesture {
+	case 0:
+		return "石头"
+	case 1:
+		return "剪刀"
+	case 2:
+		return "布"
+	default:
+		return strconv.Itoa(o.Gesture)
+	}
 }
 
 type getKeyData struct {
