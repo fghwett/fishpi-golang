@@ -45,7 +45,7 @@ func (ln *lnClient) Say() {
 	ln.liveness += 1.67
 
 	go func() {
-		if ln.liveness == 100 {
+		if ln.liveness >= 100 {
 			return
 		}
 		time.Sleep(30 * time.Second)
@@ -56,7 +56,11 @@ func (ln *lnClient) Say() {
 
 		t := (time.Duration(math.Ceil(need*ln.interval)) * time.Second).Minutes()
 
-		fmt.Printf("还差(%.f/%.f) 预计还需%.f分钟\n", need, all, t)
+		if ln.liveness < 100 {
+			fmt.Printf("还差(%.f/%.f) 预计还需%.f分钟\n", need, all, t)
+		} else {
+			fmt.Println("你已经满了 快去code吧")
+		}
 	}()
 }
 
