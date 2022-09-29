@@ -33,6 +33,9 @@ func NewLnClient(liveness float64, updateLivenessFunc func(float64)) *lnClient {
 }
 
 func (ln *lnClient) Say() {
+	if ln.liveness >= 100 {
+		return
+	}
 	now := time.Now()
 	if now.Sub(ln.lastUpdateTime).Seconds() < 30 {
 		return
@@ -45,9 +48,6 @@ func (ln *lnClient) Say() {
 	ln.liveness += 1.67
 
 	go func() {
-		if ln.liveness >= 100 {
-			return
-		}
 		time.Sleep(30 * time.Second)
 
 		all := math.Ceil(100 / ln.inc)
