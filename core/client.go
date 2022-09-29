@@ -12,6 +12,7 @@ import (
 
 type Client struct {
 	sdk *Sdk
+	ln  *lnClient
 
 	logger logger.Logger
 }
@@ -26,6 +27,21 @@ func NewClient(sdk *Sdk, logger logger.Logger) *Client {
 }
 
 func (c *Client) SendMode() {
+	liveness, e := c.sdk.UserLiveness()
+	if e != nil {
+		liveness = 0
+		fmt.Println("获取当前活跃度失败", e)
+	}
+	fmt.Println("当前活跃度：", liveness)
+	f := func(l float64) {
+		l1, e1 := c.sdk.UserLiveness()
+		if e1 != nil {
+			fmt.Println("获取当前活跃度失败", e1)
+			return
+		}
+		l = l1
+	}
+	c.ln = NewLnClient(liveness, f)
 	for {
 		var buf [1024]byte
 		read := bufio.NewReader(os.Stdin)
@@ -66,7 +82,11 @@ func (c *Client) handleSendMsg(msg string) {
 		return
 	}
 
-	fmt.Println(c.sdk.SendMsg(msg))
+	if err := c.sdk.SendMsg(msg); err != nil {
+		fmt.Println(err)
+		return
+	}
+	c.ln.Say()
 	fmt.Println()
 	fmt.Println()
 	fmt.Println()
