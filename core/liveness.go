@@ -96,13 +96,12 @@ func (ln *lnClient) Say() {
 func (ln *lnClient) watch() {
 	ticker := time.NewTicker(time.Minute * 10)
 	for {
-		if ln.liveness >= 100 {
-			return
-		}
 		select {
 		case <-ticker.C:
 			ln.mu.Lock()
-			ln.updateLivenessFunc(ln.liveness)
+			if ln.liveness < 100 {
+				ln.updateLivenessFunc(ln.liveness)
+			}
 			ln.mu.Unlock()
 		}
 	}
