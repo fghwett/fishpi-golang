@@ -5,6 +5,7 @@ import (
 
 	"fishpi/config"
 	"fishpi/core"
+	"fishpi/elves"
 	"fishpi/eventHandler"
 	"fishpi/ice"
 	"fishpi/logger"
@@ -124,7 +125,13 @@ func main() {
 
 	// 发送消息模式
 	if *message {
-		client := core.NewClient(fishPiSdk, loger)
+
+		ec := elves.NewElves(conf.FishPi.Username, conf.Elves.Token, loger)
+
+		eh := eventHandler.NewEventHandler("default", loger)
+		eh.Sub(eventHandler.ElvesStick, ec.HandleCall)
+
+		client := core.NewClient(fishPiSdk, eh, loger)
 		client.SendMode()
 	}
 

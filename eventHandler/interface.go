@@ -7,6 +7,8 @@ const (
 	WsClosed          = "ws-closed"
 	WsReconnectedFail = "ws-reconnected-fail"
 	WsMsg             = "ws-msg"
+
+	ElvesStick = `elves-stick` // 召唤小飞棍
 )
 
 type EventHandler interface {

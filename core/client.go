@@ -2,6 +2,7 @@ package core
 
 import (
 	"bufio"
+	"fishpi/eventHandler"
 	"fmt"
 	"log"
 	"os"
@@ -14,12 +15,14 @@ type Client struct {
 	sdk *Sdk
 	ln  *lnClient
 
+	eh     eventHandler.EventHandler
 	logger logger.Logger
 }
 
-func NewClient(sdk *Sdk, logger logger.Logger) *Client {
+func NewClient(sdk *Sdk, eh eventHandler.EventHandler, logger logger.Logger) *Client {
 	c := &Client{
 		sdk:    sdk,
+		eh:     eh,
 		logger: logger,
 	}
 
@@ -76,6 +79,10 @@ func (c *Client) handleSendMsg(msg string) {
 		c.handleReward()
 		return
 	}
+	if msg == "stick" {
+		c.eh.Pub(eventHandler.ElvesStick, nil)
+		return
+	}
 	if strings.HasPrefix(msg, prefixInfo) {
 		name := strings.TrimPrefix(msg, prefixInfo)
 		c.logger.Log(c.sdk.UserInfo(name))
@@ -96,6 +103,7 @@ func (c *Client) handleHelp() {
 	help := `help - 查看帮助信息
 liveness - 查询当前活跃度（官方查询时间间隔建议为30s 本程序未作限制）
 reward - 查询昨日活跃奖励是否已经领取并自动领取
+stick - 召唤小飞棍
 info-{username} - 查询用户信息 {username}为想要查询的用户的用户名
 
 其余信息将作为普通信息直接发送`

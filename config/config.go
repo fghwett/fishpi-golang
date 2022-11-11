@@ -16,6 +16,7 @@ type Config struct {
 	FishPi   *FishPi   `yaml:"fishPi"`
 	Settings *Settings `yaml:"settings"`
 	Ice      *Ice      `yaml:"ice"`
+	Elves    *Elves    `yaml:"elves"`
 }
 
 type FishPi struct {
@@ -38,6 +39,10 @@ type Ice struct {
 	Ck       string `yaml:"ck"`
 	Username string `yaml:"username"`
 	Uid      string `yaml:"uid"`
+}
+
+type Elves struct {
+	Token string `yaml:"token"`
 }
 
 func NewConfig(path string) (*Config, error) {
