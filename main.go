@@ -65,7 +65,7 @@ func main() {
 	if *wsMode {
 
 		// 初始化消息处理器
-		hl := core.NewHandler(conf.Settings.MsgCacheNum, fishPiSdk, loger)
+		hl := core.NewHandler(conf.Settings.MsgCacheNum, conf.Elves.Token, fishPiSdk, loger)
 
 		// 初始化事件触发器
 		eh := eventHandler.NewEventHandler("websocket", loger)

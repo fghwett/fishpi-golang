@@ -252,10 +252,6 @@ func (w *WsMsgReply) Msg() string {
 
 				return strings.Join(ss, "\n")
 			}(content)
-			if strings.HasPrefix(content, `<span class="kaibai">`) {
-				content = strings.TrimSuffix(strings.TrimPrefix(content, `<span class="kaibai">`), `</span>`)
-				content = fmt.Sprintf("https://sexy.1433.top/%s", content)
-			}
 
 			result = fmt.Sprintf("%s %s(%s): %s", w.Time[11:], w.UserNickname, w.UserName, content)
 

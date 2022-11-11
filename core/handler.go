@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"regexp"
 	"sort"
 	"strings"
 	"time"
@@ -23,13 +24,15 @@ type Handler struct {
 	cache     []*WsMsgReply // 消息缓存
 
 	cacheNum int
+	token    string
 	sdk      *Sdk
 	logger   logger.Logger
 }
 
-func NewHandler(cacheNum int, sdk *Sdk, logger logger.Logger) *Handler {
+func NewHandler(cacheNum int, token string, sdk *Sdk, logger logger.Logger) *Handler {
 	h := &Handler{
 		cacheNum: cacheNum,
+		token:    token,
 		sdk:      sdk,
 		logger:   logger,
 	}
@@ -92,6 +95,13 @@ func (h *Handler) HandleMsg(data interface{}) {
 				break
 			}
 		}
+	} else if strings.Contains(content, `<span class="kaibai">`) {
+		pattern := `<span class="kaibai">[a-z,A-z,0-9]+<\/span>`
+		re := regexp.MustCompile(pattern)
+		code := re.FindString(content)
+		code = strings.TrimSuffix(strings.TrimPrefix(code, `<span class="kaibai">`), `</span>`)
+		code = fmt.Sprintf("https://sexy.1433.top/%s?token=%s", code, h.token)
+		content = re.ReplaceAllString(content, code)
 	}
 
 	h.logger.Log(content)

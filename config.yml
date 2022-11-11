@@ -16,3 +16,6 @@ ice:
   ck: "your ck"
   username: "your username"
   uid: "your uid"
+
+elves:
+  token: "your token"
