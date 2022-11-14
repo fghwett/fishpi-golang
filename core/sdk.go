@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -172,6 +172,29 @@ func (c *Sdk) SendMsg(msg string) error {
 	}
 	if reply.Code != 0 {
 		return fmt.Errorf("send msg error, code: %d", reply.Code)
+	}
+
+	return nil
+}
+
+// SendBreezeMoon 发送消息 {"code":0}
+func (c *Sdk) SendBreezeMoon(msg string) error {
+	data := &sendBreezeMoonData{
+		ApiKey:            c.apiKey,
+		BreezeMoonContent: msg,
+	}
+
+	body, err := c.post(c.api.sendBreezeMoon(), data)
+	if err != nil {
+		return err
+	}
+
+	var reply sendBreezeMoonReply
+	if err = json.Unmarshal(body, &reply); err != nil {
+		return err
+	}
+	if reply.Code != 0 {
+		return fmt.Errorf("send msg error, code: %d, msg: %s", reply.Code, reply.Msg)
 	}
 
 	return nil
@@ -345,9 +368,10 @@ func (c *Sdk) do(req *http.Request) ([]byte, error) {
 	defer resp.Body.Close()
 
 	var body []byte
-	if body, err = ioutil.ReadAll(resp.Body); err != nil {
+	if body, err = io.ReadAll(resp.Body); err != nil {
 		return nil, err
 	}
+	//fmt.Printf("url: %s\ncode: %d\nbody: %s\n", req.URL.String(), resp.StatusCode, string(body))
 
 	return body, nil
 }

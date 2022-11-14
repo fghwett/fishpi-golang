@@ -20,6 +20,11 @@ type sendMsgData struct {
 	Content string `json:"content"`
 }
 
+type sendBreezeMoonData struct {
+	ApiKey            string `json:"apiKey"`
+	BreezeMoonContent string `json:"breezemoonContent"`
+}
+
 type revokeMsgData struct {
 	ApiKey string `json:"apiKey"`
 	OId    string `json:"oId"`
@@ -66,6 +71,11 @@ type isCollectdLivenessReply struct {
 
 type sendMsgReply struct {
 	Code int `json:"code"`
+}
+
+type sendBreezeMoonReply struct {
+	Code int    `json:"code"`
+	Msg  string `json:"msg"`
 }
 
 type openRedPacketReply struct {

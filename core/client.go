@@ -59,7 +59,8 @@ func (c *Client) SendMode() {
 }
 
 const (
-	prefixInfo = "info-"
+	prefixInfo       = "info-"
+	prefixBreezeMoon = "bb-"
 )
 
 func (c *Client) handleSendMsg(msg string) {
@@ -89,11 +90,19 @@ func (c *Client) handleSendMsg(msg string) {
 		return
 	}
 
-	if err := c.sdk.SendMsg(msg); err != nil {
-		fmt.Println(err)
-		return
+	if strings.HasPrefix(msg, prefixBreezeMoon) {
+		msg = strings.TrimPrefix(msg, prefixBreezeMoon)
+		if err := c.sdk.SendBreezeMoon(msg); err != nil {
+			fmt.Println(err)
+			return
+		}
+	} else {
+		if err := c.sdk.SendMsg(msg); err != nil {
+			fmt.Println(err)
+			return
+		}
+		c.ln.Say()
 	}
-	c.ln.Say()
 	fmt.Println()
 	fmt.Println()
 	fmt.Println()

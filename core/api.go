@@ -90,6 +90,12 @@ func (a *Api) sendMsg() *url.URL {
 	return &u
 }
 
+func (a *Api) sendBreezeMoon() *url.URL {
+	u := *a.u
+	u.Path = "/breezemoon"
+	return &u
+}
+
 func (a *Api) wss() string {
 	u := *a.u
 	u.Path = "/chat-room-channel"
