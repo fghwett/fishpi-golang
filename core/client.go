@@ -59,8 +59,9 @@ func (c *Client) SendMode() {
 }
 
 const (
-	prefixInfo       = "info-"
-	prefixBreezeMoon = "bb-"
+	prefixInfo        = "info-"
+	prefixBreezeMoon  = "bb-"
+	prefixChangeTopic = "topic-"
 )
 
 func (c *Client) handleSendMsg(msg string) {
@@ -97,6 +98,9 @@ func (c *Client) handleSendMsg(msg string) {
 			return
 		}
 	} else {
+		if strings.HasPrefix(msg, prefixChangeTopic) {
+			msg = fmt.Sprintf("[setdiscuss]%s[/setdiscuss]", strings.TrimPrefix(msg, prefixChangeTopic))
+		}
 		if err := c.sdk.SendMsg(msg); err != nil {
 			fmt.Println(err)
 			return
@@ -114,6 +118,8 @@ liveness - 查询当前活跃度（官方查询时间间隔建议为30s 本程�
 reward - 查询昨日活跃奖励是否已经领取并自动领取
 stick - 召唤小飞棍
 info-{username} - 查询用户信息 {username}为想要查询的用户的用户名
+bb-{messsage} - 发布明月清风
+topic-{new topic content} - 发布新话题
 
 其余信息将作为普通信息直接发送`
 
