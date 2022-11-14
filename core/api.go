@@ -96,6 +96,26 @@ func (a *Api) sendBreezeMoon() *url.URL {
 	return &u
 }
 
+func (a *Api) breezeMoonList(page, size int) *url.URL {
+	u := *a.u
+	u.Path = "/api/breezemoons"
+	value := u.Query()
+	value.Add("p", strconv.Itoa(page))
+	value.Add("size", strconv.Itoa(size))
+	u.RawQuery = value.Encode()
+	return &u
+}
+
+func (a *Api) breezeMoonUser(username string, page, size int) *url.URL {
+	u := *a.u
+	u.Path = fmt.Sprintf("/api/user/%s/breezemoons", username)
+	value := u.Query()
+	value.Add("p", strconv.Itoa(page))
+	value.Add("size", strconv.Itoa(size))
+	u.RawQuery = value.Encode()
+	return &u
+}
+
 func (a *Api) wss() string {
 	u := *a.u
 	u.Path = "/chat-room-channel"

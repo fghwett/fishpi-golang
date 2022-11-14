@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 
 	"fishpi/logger"
@@ -196,6 +197,87 @@ func (c *Sdk) SendBreezeMoon(msg string) error {
 	if reply.Code != 0 {
 		return fmt.Errorf("send msg error, code: %d, msg: %s", reply.Code, reply.Msg)
 	}
+
+	return nil
+}
+
+func (c *Sdk) BreezeMoonList(msg string) error {
+	params := strings.Split(msg, "-")
+
+	var e error
+	var page, size int
+	if len(params) >= 1 {
+		if size, e = strconv.Atoi(params[0]); e != nil {
+			size = 20
+		}
+	} else {
+		size = 20
+	}
+	if len(params) >= 2 {
+		if page, e = strconv.Atoi(params[1]); e != nil {
+			page = 1
+		}
+	} else {
+		page = 1
+	}
+
+	body, err := c.get(c.api.breezeMoonList(page, size))
+	if err != nil {
+		return err
+	}
+
+	var reply breezeMoonReply
+	if err = json.Unmarshal(body, &reply); err != nil {
+		return err
+	}
+	if reply.Code != 0 {
+		return fmt.Errorf("get breezeMoon list error, code: %d", reply.Code)
+	}
+	fmt.Println(reply.String())
+
+	return nil
+}
+
+func (c *Sdk) BreezeMoonUser(msg string) error {
+	if msg == "" {
+		return errors.New("用户名不能为空")
+	}
+	params := strings.Split(msg, "-")
+
+	var name string
+	var e error
+	var page, size int
+	if len(params) >= 1 {
+		name = params[0]
+	}
+	if len(params) >= 2 {
+		if size, e = strconv.Atoi(params[1]); e != nil {
+			size = 20
+		}
+	} else {
+		size = 20
+	}
+	if len(params) >= 3 {
+		if page, e = strconv.Atoi(params[2]); e != nil {
+			page = 1
+		}
+	} else {
+		page = 1
+	}
+
+	body, err := c.get(c.api.breezeMoonUser(name, page, size))
+	if err != nil {
+		return err
+	}
+
+	var reply breezeMoonUserReply
+	if err = json.Unmarshal(body, &reply); err != nil {
+		return err
+	}
+	if reply.Code != 0 {
+		return fmt.Errorf("get breezeMoon user %s error, code: %d", name, reply.Code)
+	}
+	fmt.Println(reply.String())
 
 	return nil
 }

@@ -59,9 +59,11 @@ func (c *Client) SendMode() {
 }
 
 const (
-	prefixInfo        = "info-"
-	prefixBreezeMoon  = "bb-"
-	prefixChangeTopic = "topic-"
+	prefixInfo           = "info-"
+	prefixBreezeMoon     = "bb-"
+	prefixChangeTopic    = "topic-"
+	prefixBreezeMoonList = "bb-list-"
+	prefixBreezeMoonUser = "bb-user-"
 )
 
 func (c *Client) handleSendMsg(msg string) {
@@ -91,7 +93,19 @@ func (c *Client) handleSendMsg(msg string) {
 		return
 	}
 
-	if strings.HasPrefix(msg, prefixBreezeMoon) {
+	if strings.HasPrefix(msg, prefixBreezeMoonList) {
+		msg = strings.TrimPrefix(msg, prefixBreezeMoonList)
+		if err := c.sdk.BreezeMoonList(msg); err != nil {
+			fmt.Println(err)
+			return
+		}
+	} else if strings.HasPrefix(msg, prefixBreezeMoonUser) {
+		msg = strings.TrimPrefix(msg, prefixBreezeMoonUser)
+		if err := c.sdk.BreezeMoonUser(msg); err != nil {
+			fmt.Println(err)
+			return
+		}
+	} else if strings.HasPrefix(msg, prefixBreezeMoon) {
 		msg = strings.TrimPrefix(msg, prefixBreezeMoon)
 		if err := c.sdk.SendBreezeMoon(msg); err != nil {
 			fmt.Println(err)
@@ -120,6 +134,8 @@ stick - 召唤小飞棍
 info-{username} - 查询用户信息 {username}为想要查询的用户的用户名
 bb-{messsage} - 发布明月清风
 topic-{new topic content} - 发布新话题
+bb-list-{20-1} - 获取明月清风 每页20条 第一页
+bb-user-{username-20-1} 获取username的明月清风 每页20条 第一页
 
 其余信息将作为普通信息直接发送`
 

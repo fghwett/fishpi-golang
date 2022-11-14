@@ -7,6 +7,7 @@ import (
 	"log"
 	"math/rand"
 	"net/url"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -76,6 +77,65 @@ type sendMsgReply struct {
 type sendBreezeMoonReply struct {
 	Code int    `json:"code"`
 	Msg  string `json:"msg"`
+}
+
+type breezeMoonReply struct {
+	Code        int               `json:"code"`
+	BreezeMoons []*breezeMoonInfo `json:"breezemoons"`
+}
+
+type breezeMoonInfo struct {
+	BreezemoonAuthorName           string `json:"breezemoonAuthorName"`           // 发布者名称
+	BreezemoonUpdated              int64  `json:"breezemoonUpdated"`              // 更新时间 13位毫秒
+	OId                            string `json:"oId"`                            // 发布人Id
+	BreezemoonCreated              int64  `json:"breezemoonCreated"`              // 创建时间
+	BreezemoonAuthorThumbnailURL48 string `json:"breezemoonAuthorThumbnailURL48"` // 发布人头像
+	TimeAgo                        string `json:"timeAgo"`                        // 时间格式化
+	BreezemoonContent              string `json:"breezemoonContent"`              // 内容
+	BreezemoonCreateTime           string `json:"breezemoonCreateTime"`           // 创建时间格式化
+	BreezemoonCity                 string `json:"breezemoonCity"`                 // 发布地区
+}
+
+func (br *breezeMoonReply) String() string {
+	sort.Slice(br.BreezeMoons, func(i, j int) bool {
+		return br.BreezeMoons[i].BreezemoonCreated < br.BreezeMoons[j].BreezemoonCreated
+	})
+	var bi []string
+	for _, b := range br.BreezeMoons {
+		bi = append(bi, b.String())
+	}
+	return strings.Join(bi, "\n")
+}
+
+func (bi *breezeMoonInfo) String() string {
+	ct := time.UnixMilli(bi.BreezemoonCreated).Format("2006-01-02 15:04:05")
+	content := strings.TrimPrefix(strings.TrimSuffix(bi.BreezemoonContent, "</p>"), "<p>")
+	return fmt.Sprintf("%s %s(%s): %s(%s)", ct, bi.BreezemoonAuthorName, bi.BreezemoonCity, content, bi.TimeAgo)
+}
+
+type breezeMoonUserReply struct {
+	Code int                 `json:"code"`
+	Data *breezeMoonUserData `json:"data"`
+}
+
+type breezeMoonUserData struct {
+	Pagination struct {
+		PaginationPageCount   int   `json:"paginationPageCount"`   // 总页数
+		PaginationPageNums    []int `json:"paginationPageNums"`    // 总条数
+		PaginationRecordCount int   `json:"paginationRecordCount"` // 页码
+	} `json:"pagination"`
+	BreezeMoons []*breezeMoonInfo `json:"breezemoons"`
+}
+
+func (br *breezeMoonUserReply) String() string {
+	sort.Slice(br.Data.BreezeMoons, func(i, j int) bool {
+		return br.Data.BreezeMoons[i].BreezemoonCreated < br.Data.BreezeMoons[j].BreezemoonCreated
+	})
+	var bi []string
+	for _, b := range br.Data.BreezeMoons {
+		bi = append(bi, b.String())
+	}
+	return strings.Join(bi, "\n")
 }
 
 type openRedPacketReply struct {
