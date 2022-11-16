@@ -15,13 +15,14 @@ import (
 )
 
 type Handler struct {
-	oldTopic  string        // 旧标题
-	red       *WsMsgReply   // 拼手气红包、平分红包
-	gesture   *WsMsgReply   // 猜拳红包
-	heartbeat *WsMsgReply   // 心跳红包
-	own       *WsMsgReply   // 专属红包
-	lastest   *WsMsgReply   // 最近一条消息
-	cache     []*WsMsgReply // 消息缓存
+	oldTopic  string              // 旧标题
+	red       *WsMsgReply         // 拼手气红包、平分红包
+	gesture   *WsMsgReply         // 猜拳红包
+	heartbeat *WsMsgReply         // 心跳红包
+	own       *WsMsgReply         // 专属红包
+	lastest   *WsMsgReply         // 最近一条消息
+	cache     []*WsMsgReply       // 消息缓存
+	sbMap     map[string]struct{} // 屏蔽名单
 
 	cacheNum int
 	token    string
@@ -33,6 +34,7 @@ func NewHandler(cacheNum int, token string, sdk *Sdk, logger logger.Logger) *Han
 	h := &Handler{
 		cacheNum: cacheNum,
 		token:    token,
+		sbMap:    make(map[string]struct{}),
 		sdk:      sdk,
 		logger:   logger,
 	}
@@ -104,6 +106,9 @@ func (h *Handler) HandleMsg(data interface{}) {
 		content = re.ReplaceAllString(content, code)
 	}
 
+	if _, ok = h.sbMap[msg.UserName]; ok {
+		return
+	}
 	h.logger.Log(content)
 }
 
@@ -184,6 +189,12 @@ func (h *Handler) handleCommand(cmd string) {
 		h.handleRepeatLastMessage()
 	} else if cmd == "topic" { // 获取当前话题
 		h.logger.Log(h.oldTopic)
+	} else if strings.HasPrefix(cmd, "sb+") { // 屏蔽发言
+		sb := strings.TrimPrefix(cmd, "sb+")
+		h.sbMap[sb] = struct{}{}
+	} else if strings.HasPrefix(cmd, "sb-") { // 取消屏蔽
+		sb := strings.TrimPrefix(cmd, "sb-")
+		delete(h.sbMap, sb)
 	} else {
 		h.logger.Logf("无效指令：%s", cmd)
 	}
