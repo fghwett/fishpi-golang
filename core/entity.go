@@ -7,6 +7,7 @@ import (
 	"log"
 	"math/rand"
 	"net/url"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -293,6 +294,8 @@ func (w *WsMsgReply) Msg() string {
 			result = fmt.Sprintf("%s %s(%s): 我发了个%s%s 里面有%d积分(%d/%d)", w.Time[11:], w.UserNickname, w.UserName, rp.TypeName(), special, rp.Money, rp.Got, rp.Count)
 		} else if strings.Contains(w.Content, "https://www.lingmx.com/card/index2.html") {
 			result = w.decodeWeatherMsg()
+		} else if strings.Contains(w.Content, "https://www.lingmx.com/card/index.html") {
+			result = w.decodeSingleWeatherMsg()
 		} else {
 			content := func() string {
 				if w.Md != "" {
@@ -332,6 +335,35 @@ func (w *WsMsgReply) Msg() string {
 		result = fmt.Sprintf("%s领取了%s发的红包(%d/%d)", w.WhoGot, w.WhoGive, w.Got, w.Count)
 	}
 	return result
+}
+
+func (w *WsMsgReply) decodeSingleWeatherMsg() string {
+	source := w.Msg()
+	pattern1 := `<img src="https:\/\/img\.shields\.io\/badge\/.+">`
+	re1 := regexp.MustCompile(pattern1)
+	codeSource := re1.FindString(source)
+	code := strings.TrimSuffix(strings.TrimPrefix(codeSource, `<img src="https://img.shields.io/badge/`), `">`)
+	fmt.Println(code)
+
+	pattern2 := `<iframe.+iframe>`
+	re2 := regexp.MustCompile(pattern2)
+	linkSource := re2.FindString(source)
+	fmt.Println("link source", linkSource)
+
+	var link string
+	dom, _ := goquery.NewDocumentFromReader(strings.NewReader(linkSource))
+	dom.Find("iframe").Each(func(i int, s *goquery.Selection) {
+		link, _ = s.Attr("src")
+	})
+	fmt.Println(link)
+
+	u, _ := url.Parse(link)
+	month := u.Query().Get("m")
+	day := u.Query().Get("d")
+	wea := u.Query().Get("w")
+	a := u.Query().Get("a")
+	weather := fmt.Sprintf("%s月%s日, 天气: %s, 当前温度: %s ℃", month, day, wea, a)
+	return strings.ReplaceAll(strings.ReplaceAll(source, codeSource, code), linkSource, weather)
 }
 
 func (w *WsMsgReply) decodeWeatherMsg() string {
