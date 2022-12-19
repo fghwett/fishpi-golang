@@ -338,26 +338,34 @@ func (w *WsMsgReply) Msg() string {
 }
 
 func (w *WsMsgReply) decodeSingleWeatherMsg() string {
-	source := w.Msg()
+	source := func() string {
+		if w.Md != "" {
+			return w.Md
+		}
+		return w.Content
+	}()
 	pattern1 := `<img src="https:\/\/img\.shields\.io\/badge\/.+">`
 	re1 := regexp.MustCompile(pattern1)
 	codeSource := re1.FindString(source)
 	code := strings.TrimSuffix(strings.TrimPrefix(codeSource, `<img src="https://img.shields.io/badge/`), `">`)
-	fmt.Println(code)
 
 	pattern2 := `<iframe.+iframe>`
 	re2 := regexp.MustCompile(pattern2)
 	linkSource := re2.FindString(source)
-	fmt.Println("link source", linkSource)
 
 	var link string
-	dom, _ := goquery.NewDocumentFromReader(strings.NewReader(linkSource))
+	dom, err := goquery.NewDocumentFromReader(strings.NewReader(linkSource))
+	if err != nil {
+		return source
+	}
 	dom.Find("iframe").Each(func(i int, s *goquery.Selection) {
 		link, _ = s.Attr("src")
 	})
-	fmt.Println(link)
 
-	u, _ := url.Parse(link)
+	u, e := url.Parse(link)
+	if e != nil {
+		return source
+	}
 	month := u.Query().Get("m")
 	day := u.Query().Get("d")
 	wea := u.Query().Get("w")
