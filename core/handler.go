@@ -15,7 +15,7 @@ import (
 )
 
 type Handler struct {
-	oldTopic  string              // 旧标题
+	oldTopic  *WsMsgReply         // 旧标题
 	red       *WsMsgReply         // 拼手气红包、平分红包
 	gesture   *WsMsgReply         // 猜拳红包
 	heartbeat *WsMsgReply         // 心跳红包
@@ -85,10 +85,14 @@ func (h *Handler) HandleMsg(data interface{}) {
 
 	content := msg.Msg()
 	if msg.Type == WsMsgTypeOnline {
-		if content == h.oldTopic {
+		if h.oldTopic == nil {
+			h.oldTopic = msg
 			return
 		}
-		h.oldTopic = content
+		if msg.Msg() == h.oldTopic.Msg() {
+			return
+		}
+		h.oldTopic = msg
 	} else if msg.Type == WsMsgTypeRevoke {
 		content = fmt.Sprintf("有人撤回了一条消息 消息内容不知道 %s %s", msg.OId, msg.UserAvatarURL210)
 		for _, v := range h.cache {
@@ -188,7 +192,9 @@ func (h *Handler) handleCommand(cmd string) {
 	} else if cmd == "repeat" { // 重复最近一条消息
 		h.handleRepeatLastMessage()
 	} else if cmd == "topic" { // 获取当前话题
-		h.logger.Log(h.oldTopic)
+		h.logger.Log(h.oldTopic.Discussing)
+	} else if strings.HasPrefix(cmd, prefixChangeTopic) {
+		h.handleTopicView(strings.TrimPrefix(cmd, prefixChangeTopic))
 	} else if strings.HasPrefix(cmd, "sb+") { // 屏蔽发言
 		sb := strings.TrimPrefix(cmd, "sb+")
 		h.sbMap[sb] = struct{}{}
@@ -242,6 +248,13 @@ func (h *Handler) handleRepeatLastMessage() {
 	}
 	msg := h.cache[len(h.cache)-1]
 	if err := h.sdk.SendMsg(msg.Md); err != nil {
+		h.logger.Log(err.Error())
+	}
+}
+
+func (h *Handler) handleTopicView(msg string) {
+	msg = fmt.Sprintf("%s\n*`# %s #`*", msg, h.oldTopic.Discussing)
+	if err := h.sdk.SendMsg(msg); err != nil {
 		h.logger.Log(err.Error())
 	}
 }
