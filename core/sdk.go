@@ -155,6 +155,16 @@ func (c *Sdk) IsCollectedLiveness() (bool, error) {
 	return reply.IsCollectedYesterdayLivenessReward, nil
 }
 
+// GetArticleInfo 获取文章信息
+func (c *Sdk) GetArticleInfo(articleId string) ([]byte, error) {
+	body, err := c.get(c.api.getArticleInfo(articleId))
+	if err != nil {
+		return nil, err
+	}
+
+	return body, nil
+}
+
 // SendMsg 发送消息 {"code":0}
 func (c *Sdk) SendMsg(msg string) error {
 	data := &sendMsgData{

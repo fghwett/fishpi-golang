@@ -84,6 +84,12 @@ func (a *Api) isCollectedLiveness() *url.URL {
 	return &u
 }
 
+func (a *Api) getArticleInfo(articleId string) *url.URL {
+	u := *a.u
+	u.Path = fmt.Sprintf("/api/article/%s", articleId)
+	return &u
+}
+
 func (a *Api) sendMsg() *url.URL {
 	u := *a.u
 	u.Path = "/chat-room/send"
