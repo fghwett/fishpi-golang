@@ -122,8 +122,23 @@ func (a *Api) breezeMoonUser(username string, page, size int) *url.URL {
 	return &u
 }
 
+// 聊天室连接
 func (a *Api) wss() string {
 	u := *a.u
 	u.Path = "/chat-room-channel"
+	return strings.ReplaceAll(u.String(), "https://", "wss://")
+}
+
+// 私聊连接
+func (a *Api) chatChanel() string {
+	u := *a.u
+	u.Path = "/chat-channel"
+	return strings.ReplaceAll(u.String(), "https://", "wss://")
+}
+
+// 用户通知连接 需要cookie
+func (a *Api) userChannel() string {
+	u := *a.u
+	u.Path = "/user-channel"
 	return strings.ReplaceAll(u.String(), "https://", "wss://")
 }
