@@ -1,7 +1,7 @@
 package ws
 
 type Websocket interface {
-	Send(msg []byte)
+	Send(msg interface{})
 	Start() error
 	Stop() error
 }

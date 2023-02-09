@@ -102,7 +102,15 @@ func (w *ws) reConn() {
 	}
 }
 
-func (w *ws) Send(msg []byte) {
+func (w *ws) Send(data interface{}) {
+	var msg []byte
+	switch data.(type) {
+	case []byte:
+		msg = data.([]byte)
+	case string:
+		msg = []byte(data.(string))
+	default:
+	}
 	w.sendChan <- msg
 }
 
