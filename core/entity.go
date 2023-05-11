@@ -20,6 +20,7 @@ import (
 type sendMsgData struct {
 	ApiKey  string `json:"apiKey"`
 	Content string `json:"content"`
+	Client  string `json:"client"`
 }
 
 type sendBreezeMoonData struct {
@@ -220,6 +221,7 @@ const (
 	WsMsgTypeRevoke          = "revoke"          // 撤回
 	WsMsgTypeMsg             = "msg"             // 聊天
 	WsMsgTypeRedPacketStatus = "redPacketStatus" // 红包领取
+	WsMsgTypeCustomMessage   = "customMessage"   // 进入离开聊天室 消息
 )
 
 // WsMsgReply websocket收到的消息结构体
@@ -256,6 +258,9 @@ type WsMsgReply struct {
 	Got     int    `json:"got"`     // 已领取个数
 	WhoGive string `json:"whoGive"` // 发送者用户名
 	WhoGot  string `json:"whoGot"`  // 领取者用户名
+
+	Client  string `json:"client"`  // 消息客户端
+	Message string `json:"message"` // 普通消息的消息内容
 }
 
 func (w *WsMsgReply) Parse() {
@@ -285,6 +290,8 @@ func (w *WsMsgReply) Msg() string {
 	switch w.Type {
 	case WsMsgTypeOnline:
 		result = fmt.Sprintf("当前话题：%s 在线人数：%d", w.Discussing, w.OnlineChatCnt)
+	case WsMsgTypeCustomMessage:
+		result = w.Message
 	case WsMsgTypeMsg:
 		if rp := w.RedPackageInfo; rp != nil && rp.Type != "" {
 			special := ""
@@ -326,7 +333,7 @@ func (w *WsMsgReply) Msg() string {
 				return strings.Join(ss, "\n")
 			}(content)
 
-			result = fmt.Sprintf("%s %s(%s): %s", w.Time[11:], w.UserNickname, w.UserName, content)
+			result = fmt.Sprintf("%s %s(%s): %s(%s)", w.Time[11:], w.UserNickname, w.UserName, content, w.Client)
 
 		}
 	case WsMsgTypeDiscussChanged:
