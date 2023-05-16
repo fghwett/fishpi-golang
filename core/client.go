@@ -64,6 +64,7 @@ const (
 	prefixChangeTopic    = "topic-"
 	prefixBreezeMoonList = "bb-list-"
 	prefixBreezeMoonUser = "bb-user-"
+	prefixBarrage        = "barrage-"
 )
 
 func (c *Client) handleSendMsg(msg string) {
@@ -114,6 +115,11 @@ func (c *Client) handleSendMsg(msg string) {
 	} else {
 		if strings.HasPrefix(msg, prefixChangeTopic) {
 			msg = fmt.Sprintf("[setdiscuss]%s[/setdiscuss]", strings.TrimPrefix(msg, prefixChangeTopic))
+		}
+		if strings.HasPrefix(msg, prefixBarrage) {
+			msg = strings.TrimPrefix(msg, prefixBarrage)
+			color := "#66CCFF"
+			msg = fmt.Sprintf(`[barrager]{"color":"%s","content":"%s"}[/barrager]`, color, msg)
 		}
 		if err := c.sdk.SendMsg(msg); err != nil {
 			fmt.Println(err)

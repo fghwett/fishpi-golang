@@ -222,6 +222,7 @@ const (
 	WsMsgTypeMsg             = "msg"             // 聊天
 	WsMsgTypeRedPacketStatus = "redPacketStatus" // 红包领取
 	WsMsgTypeCustomMessage   = "customMessage"   // 进入离开聊天室 消息
+	WsMsgTypeBarrage         = "barrager"        // 弹幕
 )
 
 // WsMsgReply websocket收到的消息结构体
@@ -259,8 +260,15 @@ type WsMsgReply struct {
 	WhoGive string `json:"whoGive"` // 发送者用户名
 	WhoGot  string `json:"whoGot"`  // 领取者用户名
 
-	Client  string `json:"client"`  // 消息客户端
+	// 客户端
+	Client string `json:"client"` // 消息客户端
+
+	// 普通消息
 	Message string `json:"message"` // 普通消息的消息内容
+
+	// 弹幕消息
+	BarrageColor   string `json:"barragerColor"`
+	BarrageContent string `json:"barragerContent"`
 }
 
 func (w *WsMsgReply) Parse() {
@@ -292,6 +300,8 @@ func (w *WsMsgReply) Msg() string {
 		result = fmt.Sprintf("当前话题：%s 在线人数：%d", w.Discussing, w.OnlineChatCnt)
 	case WsMsgTypeCustomMessage:
 		result = w.Message
+	case WsMsgTypeBarrage:
+		result = fmt.Sprintf("%s发送了弹幕消息：(%s)%s", w.UserNickname, w.BarrageColor, w.BarrageContent)
 	case WsMsgTypeMsg:
 		if rp := w.RedPackageInfo; rp != nil && rp.Type != "" {
 			special := ""

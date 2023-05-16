@@ -170,7 +170,7 @@ func (c *Sdk) SendMsg(msg string) error {
 	data := &sendMsgData{
 		ApiKey:  c.apiKey,
 		Content: msg,
-		Client:  "Golang/0.0.1",
+		Client:  "Golang/v0.0.2",
 	}
 
 	body, err := c.post(c.api.sendMsg(), data)
