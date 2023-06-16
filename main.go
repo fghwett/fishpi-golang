@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fishpi/simple"
 	ui2 "fishpi/ui"
 	"flag"
 
@@ -15,12 +16,13 @@ import (
 
 // 💦
 var (
-	confPath = flag.String("conf", "./_tmp/config.yaml", "config path, default: ./_tmp/config.yml")
-	login    = flag.Bool("login", false, "是否登录操作(false)")
-	wsMode   = flag.Bool("ws", false, "是否接收消息模式(false)")
-	message  = flag.Bool("msg", false, "是否发送消息模式(false)")
-	iceMode  = flag.Bool("ice", false, "是否开启小冰游戏模式(false)")
-	uiMode   = flag.Bool("ui", false, "是否使用UI模式(false)")
+	confPath   = flag.String("conf", "./_tmp/config.yaml", "config path, default: ./_tmp/config.yml")
+	login      = flag.Bool("login", false, "是否登录操作(false)")
+	wsMode     = flag.Bool("ws", false, "是否接收消息模式(false)")
+	message    = flag.Bool("msg", false, "是否发送消息模式(false)")
+	iceMode    = flag.Bool("ice", false, "是否开启小冰游戏模式(false)")
+	uiMode     = flag.Bool("ui", false, "是否使用UI模式(false)")
+	simpleMode = flag.Bool("simple", false, "是否使用simple UI模式(false)")
 )
 
 func main() {
@@ -161,6 +163,35 @@ func main() {
 		}
 
 		ui := ui2.NewUI(hl)
+		if err = ui.Start(); err != nil {
+			panic(err)
+		}
+	}
+
+	// 简单UI模式
+	if *simpleMode {
+		// 初始化事件触发器
+		eh := eventHandler.NewEventHandler("public-websocket", loger)
+
+		// 初始化公共聊天室核心逻辑
+		hl := core.NewCore(conf.Settings.MsgCacheNum, conf.Elves.Token, fishPiSdk, eh)
+
+		eh.Sub(eventHandler.WsMsg, hl.HandleMsg)
+		eh.Sub(eventHandler.WsConnected, hl.HandleWsStatusMsg)
+		eh.Sub(eventHandler.WsClosed, hl.HandleWsStatusMsg)
+		eh.Sub(eventHandler.WsReconnectedFail, hl.HandleWsStatusMsg)
+
+		// 连接ws
+		u := fishPiSdk.GetWsUrl()
+		wsClient := ws.NewWs(u, conf.Settings.WsInterval, eh, loger)
+		eh.Sub(eventHandler.WsSend, wsClient.Send)
+
+		if err = wsClient.Start(); err != nil {
+			loger.Logf("websocket连接失败 %s", err)
+			return
+		}
+
+		ui := simple.NewSimple(hl)
 		if err = ui.Start(); err != nil {
 			panic(err)
 		}
