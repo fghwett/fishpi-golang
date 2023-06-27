@@ -360,7 +360,7 @@ func (c *Sdk) OpenRedPacket(oId string, gesture string) (string, error) {
 	}
 	//receiveResult += fmt.Sprintf("他出的%s", reply.Info.GestureName()) // 接口并未返回对方出拳 但是网页有
 
-	result := fmt.Sprintf("你打开%s发的猜拳红包(%d/%d) %s\n 领取情况：\n%s\n\n%s", reply.Info.UserName, reply.Info.Got, reply.Info.Count, receiveResult, strings.Join(receiveList, "\n"), reply.Info.Msg)
+	result := fmt.Sprintf("你打开%s发的红包(%d/%d) %s\n 领取情况：\n%s\n\n%s", reply.Info.UserName, reply.Info.Got, reply.Info.Count, receiveResult, strings.Join(receiveList, "\n"), reply.Info.Msg)
 
 	return result, nil
 }

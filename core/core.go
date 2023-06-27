@@ -3,10 +3,6 @@ package core
 import (
 	"encoding/json"
 	"fishpi/eventHandler"
-	"fmt"
-	"regexp"
-	"sort"
-	"strings"
 	"time"
 )
 
@@ -19,8 +15,8 @@ type Core struct {
 	lastest   *WsMsgReply   // 最近一条消息
 	cache     []*WsMsgReply // 消息缓存
 
-	showMsgChannel chan []byte
-	showMsgCache   []string
+	msgChannel   chan *WsMsgReply
+	showMsgCache []*WsMsgReply
 
 	cacheNum int
 	token    string
@@ -42,72 +38,78 @@ func NewCore(cacheNum int, token string, sdk *Sdk, eh eventHandler.EventHandler)
 }
 
 func (c *Core) init() {
-	data, err := c.sdk.ChatRecordPage(1)
-	if err != nil {
-		c.showMsg(fmt.Sprintf("获取历史聊天记录失败 %s", err.Error()))
-		return
-	}
-	sort.Slice(data, func(i, j int) bool {
-		t1, _ := time.Parse("2006-01-02 15:04:05", data[i].Time)
-		t2, _ := time.Parse("2006-01-02 15:04:05", data[j].Time)
-		return t1.Before(t2)
-	})
-	for _, v := range data {
-		content := strings.TrimPrefix(strings.TrimSuffix(v.Content, "</p>"), "<p>")
-		c.showMsg(fmt.Sprintf("%s %s(%s): %s", v.Time[11:], v.UserNickname, v.UserName, content))
-	}
+	//data, err := c.sdk.ChatRecordPage(1)
+	//if err != nil {
+	//	//c.showMsg(fmt.Sprintf("获取历史聊天记录失败 %s", err.Error()))
+	//	return
+	//}
+	//sort.Slice(data, func(i, j int) bool {
+	//	t1, _ := time.Parse("2006-01-02 15:04:05", data[i].Time)
+	//	t2, _ := time.Parse("2006-01-02 15:04:05", data[j].Time)
+	//	return t1.Before(t2)
+	//})
+	//for _, v := range data {
+	//	//content := strings.TrimPrefix(strings.TrimSuffix(v.Content, "</p>"), "<p>")
+	//	//c.showMsg(fmt.Sprintf("%s %s(%s): %s", v.Time[11:], v.UserNickname, v.UserName, content))
+	//}
 }
 
 // SendPublicMsg 发送消息
-func (c *Core) SendPublicMsg(content string) {
-	if err := c.sdk.SendMsg(content); err != nil {
-		c.showMsg(fmt.Sprintf("send msg error: %s", err))
-	}
+func (c *Core) SendPublicMsg(content string) error {
+	return c.sdk.SendMsg(content)
+}
+
+// GetUserInfo 获取用户信息
+func (c *Core) GetUserInfo(username string) string {
+	return c.sdk.UserInfo(username)
+}
+
+// OpenRedPacket 打开红包
+func (c *Core) OpenRedPacket(oId, gesture string) (string, error) {
+	return c.sdk.OpenRedPacket(oId, gesture)
 }
 
 func (c *Core) HandleMsg(data interface{}) {
 	bytes, ok := data.([]byte)
 	if !ok {
-		c.showMsg(fmt.Sprintf("ws data is not []byte: %v", string(bytes)))
 		return
 	}
 
 	msg := &WsMsgReply{}
 	if err := json.Unmarshal(bytes, &msg); err != nil {
-		c.showMsg(fmt.Sprintf("parse message error: %s, body: %s\n", err, string(bytes)))
 		return
 	}
 	msg.Parse()
 	c.filterMessage(msg)
 
-	content := msg.Msg()
-	if msg.Type == WsMsgTypeOnline {
-		if c.oldTopic == nil {
-			c.oldTopic = msg
-			return
-		}
-		if msg.Msg() == c.oldTopic.Msg() {
-			return
-		}
-		c.oldTopic = msg
-	} else if msg.Type == WsMsgTypeRevoke {
-		content = fmt.Sprintf("有人撤回了一条消息 消息内容不知道 %s %s", msg.OId, msg.UserAvatarURL210)
-		for _, v := range c.cache {
-			if msg.OId == v.OId {
-				content = fmt.Sprintf("有人撤回了一条消息：%s", v.Msg())
-				break
-			}
-		}
-	} else if strings.Contains(content, `<span class="kaibai">`) {
-		pattern := `<span class="kaibai">[a-z,A-z,0-9]+<\/span>`
-		re := regexp.MustCompile(pattern)
-		code := re.FindString(content)
-		code = strings.TrimSuffix(strings.TrimPrefix(code, `<span class="kaibai">`), `</span>`)
-		code = fmt.Sprintf("https://sexy.1433.top/%s?token=%s", code, c.token)
-		content = re.ReplaceAllString(content, code)
-	}
+	//content := msg.Msg()
+	//if msg.Type == WsMsgTypeOnline {
+	//	if c.oldTopic == nil {
+	//		c.oldTopic = msg
+	//		return
+	//	}
+	//	if msg.Msg() == c.oldTopic.Msg() {
+	//		return
+	//	}
+	//	c.oldTopic = msg
+	//} else if msg.Type == WsMsgTypeRevoke {
+	//	content = fmt.Sprintf("有人撤回了一条消息 消息内容不知道 %s %s", msg.OId, msg.UserAvatarURL210)
+	//	for _, v := range c.cache {
+	//		if msg.OId == v.OId {
+	//			content = fmt.Sprintf("有人撤回了一条消息：%s", v.Msg())
+	//			break
+	//		}
+	//	}
+	//} else if strings.Contains(content, `<span class="kaibai">`) {
+	//	pattern := `<span class="kaibai">[a-z,A-z,0-9]+<\/span>`
+	//	re := regexp.MustCompile(pattern)
+	//	code := re.FindString(content)
+	//	code = strings.TrimSuffix(strings.TrimPrefix(code, `<span class="kaibai">`), `</span>`)
+	//	code = fmt.Sprintf("https://sexy.1433.top/%s?token=%s", code, c.token)
+	//	content = re.ReplaceAllString(content, code)
+	//}
 
-	c.showMsg(content)
+	c.showMsg(msg)
 }
 
 func (c *Core) addCache(msg *WsMsgReply) {
@@ -143,12 +145,11 @@ func (c *Core) filterMessage(msg *WsMsgReply) {
 }
 
 func (c *Core) HandleWsStatusMsg(data interface{}) {
-	str, ok := data.(string)
+	msg, ok := data.(*WsMsgReply)
 	if !ok {
-		c.showMsg(fmt.Sprintf("ws status data is not string: %v", str))
 		return
 	}
-	c.showMsg(str)
+	c.showMsg(msg)
 }
 
 func (c *Core) KeepLive() {
@@ -165,23 +166,23 @@ func (c *Core) KeepLive() {
 	}()
 }
 
-func (c *Core) showMsg(msg string) {
-	if c.showMsgChannel == nil {
+func (c *Core) showMsg(msg *WsMsgReply) {
+	if c.msgChannel == nil {
 		c.showMsgCache = append(c.showMsgCache, msg)
 		return
 	}
 	if len(c.showMsgCache) != 0 {
 		for _, v := range c.showMsgCache {
-			c.showMsgChannel <- []byte(v)
+			c.msgChannel <- v
 		}
 		c.showMsgCache = nil
 	}
-	c.showMsgChannel <- []byte(msg)
+	c.msgChannel <- msg
 }
 
-func (c *Core) ShowMsgChannel() <-chan []byte {
-	if c.showMsgChannel == nil {
-		c.showMsgChannel = make(chan []byte, 1024)
+func (c *Core) ShowMsgChannel() <-chan *WsMsgReply {
+	if c.msgChannel == nil {
+		c.msgChannel = make(chan *WsMsgReply, 1024)
 	}
-	return c.showMsgChannel
+	return c.msgChannel
 }
