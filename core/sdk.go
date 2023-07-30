@@ -156,13 +156,18 @@ func (c *Sdk) IsCollectedLiveness() (bool, error) {
 }
 
 // GetArticleInfo 获取文章信息
-func (c *Sdk) GetArticleInfo(articleId string) ([]byte, error) {
-	body, err := c.get(c.api.getArticleInfo(articleId))
+func (c *Sdk) GetArticleInfo(data *ArticleInfoData) (*ArticleInfoReply, error) {
+	body, err := c.get(c.api.getArticleInfo(data))
 	if err != nil {
 		return nil, err
 	}
 
-	return body, nil
+	reply := new(ArticleInfoReply)
+	if err = json.Unmarshal(body, &reply); err != nil {
+		return nil, err
+	}
+
+	return reply, nil
 }
 
 // SendMsg 发送消息 {"code":0}
@@ -316,6 +321,31 @@ func (c *Sdk) RevokeMsg(oId string) error {
 	return nil
 }
 
+// PointTransfer 积分转账
+func (c *Sdk) PointTransfer(username string, amount int, momo string) ([]byte, error) {
+	data := &pointTransferData{
+		ApiKey:   c.apiKey,
+		Username: username,
+		Amount:   amount,
+		Memo:     momo,
+	}
+
+	body, err := c.post(c.api.pointTransfer(), data)
+	if err != nil {
+		return nil, err
+	}
+
+	//var reply revokeMsgReply
+	//if err = json.Unmarshal(body, &reply); err != nil {
+	//	return err
+	//}
+	//if reply.Code != 0 {
+	//	return fmt.Errorf("revoke msg error, code: %d, msg: %s", reply.Code, reply.Msg)
+	//}
+
+	return body, nil
+}
+
 // OpenRedPacket 打开红包
 func (c *Sdk) OpenRedPacket(oId string, gesture string) (string, error) {
 	data := &openRedPacketData{
@@ -437,6 +467,7 @@ func (c *Sdk) get(u *url.URL) ([]byte, error) {
 	q := u.Query()
 	q.Add("apiKey", c.apiKey)
 	u.RawQuery = q.Encode()
+	fmt.Println(u.String())
 	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
 	if err != nil {
 		return nil, err

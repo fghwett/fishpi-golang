@@ -38,6 +38,18 @@ type revokeMsgReply struct {
 	Msg  string `json:"msg"`
 }
 
+type pointTransferData struct {
+	ApiKey   string `json:"apiKey"`
+	Username string `json:"userName"`
+	Amount   int    `json:"amount"`
+	Memo     string `json:"memo"`
+}
+
+//type revokeMsgReply struct {
+//	Code int    `json:"code"`
+//	Msg  string `json:"msg"`
+//}
+
 type openRedPacketData struct {
 	ApiKey  string `json:"apiKey"`
 	OId     string `json:"oId"`
@@ -613,4 +625,397 @@ type ChatRecordPageData struct {
 	UserAvatarURL210 string `json:"userAvatarURL210"`
 	Content          string `json:"content"`
 	UserAvatarURL48  string `json:"userAvatarURL48"`
+}
+
+type ArticleInfoData struct {
+	ArticleId string `json:"articleId"`
+	Page      int    `json:"page"`
+	PageSize  int    `json:"pageSize"`
+}
+
+func (a *ArticleInfoData) Query() string {
+	values := url.Values{}
+	if a.PageSize != 0 {
+		values.Add("size", strconv.Itoa(a.PageSize))
+	}
+	if a.Page != 0 {
+		values.Add("p", strconv.Itoa(a.Page))
+	}
+	if values.Encode() != "" {
+		return values.Encode()
+	}
+	return ""
+}
+
+type ArticleInfoReply struct {
+	Msg  string `json:"msg"`  // 错误消息
+	Code int    `json:"code"` // 为 0 则密钥有效，为 -1 则密钥无效
+	Data struct {
+		Article struct {
+			ArticleCreateTime  string `json:"articleCreateTime"` //
+			DiscussionViewable bool   `json:"discussionViewable"`
+			ArticleToC         string `json:"articleToC"`
+			ThankedCnt         int    `json:"thankedCnt"`
+			ArticleComments    []struct {
+				CommentNice              bool    `json:"commentNice"`              // 是否好评 false
+				CommentCreateTimeStr     string  `json:"commentCreateTimeStr"`     // 评论创建时间 2022-12-08 09:43:14
+				CommentAuthorId          string  `json:"commentAuthorId"`          // 评论作者ID 1656984017362
+				CommentScore             float64 `json:"commentScore"`             // 评论分数 0
+				CommentCreateTime        string  `json:"commentCreateTime"`        // 评论创建时间 Thu Dec 08 09:43:14 CST 2022
+				CommentAuthorURL         string  `json:"commentAuthorURL"`         // 评论人链接 https://www.zqcnc.cn
+				CommentVote              int     `json:"commentVote"`              // 评论投票 -1
+				CommentRevisionCount     int     `json:"commentRevisionCount"`     // 评论修订数量 1
+				TimeAgo                  string  `json:"timeAgo"`                  // 时间 7 个月前
+				CommentOriginalCommentId string  `json:"commentOriginalCommentId"` // 评论原始评论ID 1670464120019
+				SysMetal                 []struct {
+					Name        string `json:"name"`
+					Description string `json:"description"`
+					Data        string `json:"data"`
+					Attr        string `json:"attr"`
+					Enabled     bool   `json:"enabled"`
+				} `json:"sysMetal"` // 评论人的徽章
+				CommentGoodCnt     int    `json:"commentGoodCnt"`     // 评论点赞数 0
+				CommentVisible     int    `json:"commentVisible"`     // 评论可见性 0
+				CommentOnArticleId string `json:"commentOnArticleId"` // 评论所在文章ID 1670463550914
+				RewardedCnt        int    `json:"rewardedCnt"`        // 评论奖励数 1
+				CommentSharpURL    string `json:"commentSharpURL"`    // 评论锚点链接 /article/1670463550914#1670463793959
+				CommentAnonymous   int    `json:"commentAnonymous"`   // 评论匿名性 0
+				CommentReplyCnt    int    `json:"commentReplyCnt"`    // 评论回复数 0
+				OId                string `json:"oId"`                // 评论ID 1670463793959
+				CommentContent     string `json:"commentContent"`     // 评论内容
+				CommentStatus      int    `json:"commentStatus"`      // 评论状态 0
+				Commenter          struct {
+					UserOnlineFlag                bool   `json:"userOnlineFlag"`
+					OnlineMinute                  int    `json:"onlineMinute"`
+					UserPointStatus               int    `json:"userPointStatus"`
+					UserFollowerStatus            int    `json:"userFollowerStatus"`
+					UserGuideStep                 int    `json:"userGuideStep"`
+					UserOnlineStatus              int    `json:"userOnlineStatus"`
+					UserCurrentCheckinStreakStart int    `json:"userCurrentCheckinStreakStart"`
+					ChatRoomPictureStatus         int    `json:"chatRoomPictureStatus"`
+					UserTags                      string `json:"userTags"`
+					UserCommentStatus             int    `json:"userCommentStatus"`
+					UserTimezone                  string `json:"userTimezone"`
+					UserURL                       string `json:"userURL"`
+					UserForwardPageStatus         int    `json:"userForwardPageStatus"`
+					UserUAStatus                  int    `json:"userUAStatus"`
+					UserIndexRedirectURL          string `json:"userIndexRedirectURL"`
+					UserLatestArticleTime         int64  `json:"userLatestArticleTime"`
+					UserTagCount                  int    `json:"userTagCount"`
+					UserNickname                  string `json:"userNickname"`
+					UserListViewMode              int    `json:"userListViewMode"`
+					UserLongestCheckinStreak      int    `json:"userLongestCheckinStreak"`
+					UserAvatarType                int    `json:"userAvatarType"`
+					UserSubMailSendTime           int64  `json:"userSubMailSendTime"`
+					UserUpdateTime                int64  `json:"userUpdateTime"`
+					UserSubMailStatus             int    `json:"userSubMailStatus"`
+					UserJoinPointRank             int    `json:"userJoinPointRank"`
+					UserLatestLoginTime           int64  `json:"userLatestLoginTime"`
+					UserAppRole                   int    `json:"userAppRole"`
+					UserAvatarViewMode            int    `json:"userAvatarViewMode"`
+					UserStatus                    int    `json:"userStatus"` // 用户状态 4为销号
+					UserLongestCheckinStreakEnd   int    `json:"userLongestCheckinStreakEnd"`
+					UserWatchingArticleStatus     int    `json:"userWatchingArticleStatus"`
+					UserLatestCmtTime             int64  `json:"userLatestCmtTime"`
+					UserProvince                  string `json:"userProvince"`
+					UserCurrentCheckinStreak      int    `json:"userCurrentCheckinStreak"`
+					UserNo                        int    `json:"userNo"`
+					UserAvatarURL                 string `json:"userAvatarURL"`
+					UserFollowingTagStatus        int    `json:"userFollowingTagStatus"`
+					UserLanguage                  string `json:"userLanguage"`
+					UserJoinUsedPointRank         int    `json:"userJoinUsedPointRank"`
+					UserCurrentCheckinStreakEnd   int    `json:"userCurrentCheckinStreakEnd"`
+					UserFollowingArticleStatus    int    `json:"userFollowingArticleStatus"`
+					UserKeyboardShortcutsStatus   int    `json:"userKeyboardShortcutsStatus"`
+					UserReplyWatchArticleStatus   int    `json:"userReplyWatchArticleStatus"`
+					UserCommentViewMode           int    `json:"userCommentViewMode"`
+					UserBreezemoonStatus          int    `json:"userBreezemoonStatus"`
+					UserCheckinTime               int64  `json:"userCheckinTime"`
+					UserUsedPoint                 int    `json:"userUsedPoint"`
+					UserArticleStatus             int    `json:"userArticleStatus"`
+					UserPoint                     int    `json:"userPoint"`
+					UserCommentCount              int    `json:"userCommentCount"`
+					UserIntro                     string `json:"userIntro"`
+					UserMobileSkin                string `json:"userMobileSkin"`
+					UserListPageSize              int    `json:"userListPageSize"`
+					OId                           string `json:"oId"`
+					UserName                      string `json:"userName"` // 用户名
+					UserGeoStatus                 int    `json:"userGeoStatus"`
+					UserLongestCheckinStreakStart int    `json:"userLongestCheckinStreakStart"`
+					UserSkin                      string `json:"userSkin"`
+					UserNotifyStatus              int    `json:"userNotifyStatus"`
+					UserFollowingUserStatus       int    `json:"userFollowingUserStatus"`
+					UserArticleCount              int    `json:"userArticleCount"`
+					UserRole                      string `json:"userRole"`
+				} `json:"commenter"` // 评论者信息
+				CommentAuthorName                 string `json:"commentAuthorName"`                           // 评论者昵称
+				CommentThankCnt                   int    `json:"commentThankCnt"`                             // 评论感谢数 0
+				CommentBadCnt                     int    `json:"commentBadCnt"`                               // 评论踩数 0
+				Rewarded                          bool   `json:"rewarded"`                                    // 是否打赏过 false
+				CommentAuthorThumbnailURL         string `json:"commentAuthorThumbnailURL"`                   // 评论者头像
+				CommentAudioURL                   string `json:"commentAudioURL"`                             // 评论音频地址
+				CommentQnAOffered                 int    `json:"commentQnAOffered"`                           // 评论是否被采纳 0
+				CommentOriginalAuthorThumbnailURL string `json:"commentOriginalAuthorThumbnailURL,omitempty"` // 评论原作者头像
+				PaginationCurrentPageNum          int    `json:"paginationCurrentPageNum,omitempty"`          // 当前页码
+			} `json:"articleComments"`
+			ArticleRewardPoint          int    `json:"articleRewardPoint"`
+			ArticleRevisionCount        int    `json:"articleRevisionCount"`
+			ArticleLatestCmtTime        string `json:"articleLatestCmtTime"`
+			ArticleThumbnailURL         string `json:"articleThumbnailURL"`
+			ArticleAuthorName           string `json:"articleAuthorName"`
+			ArticleType                 int    `json:"articleType"`
+			ArticleCreateTimeStr        string `json:"articleCreateTimeStr"`
+			ArticleViewCount            int    `json:"articleViewCount"`
+			ArticleCommentable          bool   `json:"articleCommentable"`
+			ArticleAuthorThumbnailURL20 string `json:"articleAuthorThumbnailURL20"`
+			ArticleOriginalContent      string `json:"articleOriginalContent"`
+			ArticlePreviewContent       string `json:"articlePreviewContent"`
+			ArticleContent              string `json:"articleContent"`
+			ArticleAuthorIntro          string `json:"articleAuthorIntro"`
+			ArticleCommentCount         int    `json:"articleCommentCount"`
+			RewardedCnt                 int    `json:"rewardedCnt"`
+			ArticleLatestCmterName      string `json:"articleLatestCmterName"`
+			ArticleAnonymousView        int    `json:"articleAnonymousView"`
+			CmtTimeAgo                  string `json:"cmtTimeAgo"`
+			ArticleLatestCmtTimeStr     string `json:"articleLatestCmtTimeStr"`
+			ArticleNiceComments         []struct {
+				CommentCreateTimeStr     string  `json:"commentCreateTimeStr"`
+				CommentAuthorId          string  `json:"commentAuthorId"`
+				CommentScore             float64 `json:"commentScore"`
+				CommentCreateTime        string  `json:"commentCreateTime"`
+				CommentAuthorURL         string  `json:"commentAuthorURL"`
+				CommentVote              int     `json:"commentVote"`
+				TimeAgo                  string  `json:"timeAgo"`
+				CommentOriginalCommentId string  `json:"commentOriginalCommentId"`
+				SysMetal                 []struct {
+					Name        string `json:"name"`
+					Description string `json:"description"`
+					Data        string `json:"data"`
+					Attr        string `json:"attr"`
+					Enabled     bool   `json:"enabled"`
+				} `json:"sysMetal"`
+				CommentGoodCnt     int    `json:"commentGoodCnt"`
+				CommentVisible     int    `json:"commentVisible"`
+				CommentOnArticleId string `json:"commentOnArticleId"`
+				RewardedCnt        int    `json:"rewardedCnt"`
+				CommentThankLabel  string `json:"commentThankLabel"`
+				CommentSharpURL    string `json:"commentSharpURL"`
+				CommentAnonymous   int    `json:"commentAnonymous"`
+				CommentReplyCnt    int    `json:"commentReplyCnt"`
+				OId                string `json:"oId"`
+				CommentContent     string `json:"commentContent"`
+				CommentStatus      int    `json:"commentStatus"`
+				Commenter          struct {
+					UserOnlineFlag                bool   `json:"userOnlineFlag"`
+					OnlineMinute                  int    `json:"onlineMinute"`
+					UserPointStatus               int    `json:"userPointStatus"`
+					UserFollowerStatus            int    `json:"userFollowerStatus"`
+					UserGuideStep                 int    `json:"userGuideStep"`
+					UserOnlineStatus              int    `json:"userOnlineStatus"`
+					UserCurrentCheckinStreakStart int    `json:"userCurrentCheckinStreakStart"`
+					ChatRoomPictureStatus         int    `json:"chatRoomPictureStatus"`
+					UserTags                      string `json:"userTags"`
+					UserCommentStatus             int    `json:"userCommentStatus"`
+					UserTimezone                  string `json:"userTimezone"`
+					UserURL                       string `json:"userURL"`
+					UserForwardPageStatus         int    `json:"userForwardPageStatus"`
+					UserUAStatus                  int    `json:"userUAStatus"`
+					UserIndexRedirectURL          string `json:"userIndexRedirectURL"`
+					UserLatestArticleTime         int64  `json:"userLatestArticleTime"`
+					UserTagCount                  int    `json:"userTagCount"`
+					UserNickname                  string `json:"userNickname"`
+					UserListViewMode              int    `json:"userListViewMode"`
+					UserLongestCheckinStreak      int    `json:"userLongestCheckinStreak"`
+					UserAvatarType                int    `json:"userAvatarType"`
+					UserSubMailSendTime           int64  `json:"userSubMailSendTime"`
+					UserUpdateTime                int64  `json:"userUpdateTime"`
+					UserSubMailStatus             int    `json:"userSubMailStatus"`
+					UserJoinPointRank             int    `json:"userJoinPointRank"`
+					UserLatestLoginTime           int64  `json:"userLatestLoginTime"`
+					UserAppRole                   int    `json:"userAppRole"`
+					UserAvatarViewMode            int    `json:"userAvatarViewMode"`
+					UserStatus                    int    `json:"userStatus"`
+					UserLongestCheckinStreakEnd   int    `json:"userLongestCheckinStreakEnd"`
+					UserWatchingArticleStatus     int    `json:"userWatchingArticleStatus"`
+					UserLatestCmtTime             int64  `json:"userLatestCmtTime"`
+					UserProvince                  string `json:"userProvince"`
+					UserCurrentCheckinStreak      int    `json:"userCurrentCheckinStreak"`
+					UserNo                        int    `json:"userNo"`
+					UserAvatarURL                 string `json:"userAvatarURL"`
+					UserFollowingTagStatus        int    `json:"userFollowingTagStatus"`
+					UserLanguage                  string `json:"userLanguage"`
+					UserJoinUsedPointRank         int    `json:"userJoinUsedPointRank"`
+					UserCurrentCheckinStreakEnd   int    `json:"userCurrentCheckinStreakEnd"`
+					UserFollowingArticleStatus    int    `json:"userFollowingArticleStatus"`
+					UserKeyboardShortcutsStatus   int    `json:"userKeyboardShortcutsStatus"`
+					UserReplyWatchArticleStatus   int    `json:"userReplyWatchArticleStatus"`
+					UserCommentViewMode           int    `json:"userCommentViewMode"`
+					UserBreezemoonStatus          int    `json:"userBreezemoonStatus"`
+					UserCheckinTime               int64  `json:"userCheckinTime"`
+					UserUsedPoint                 int    `json:"userUsedPoint"`
+					UserArticleStatus             int    `json:"userArticleStatus"`
+					UserPoint                     int    `json:"userPoint"`
+					UserCommentCount              int    `json:"userCommentCount"`
+					UserIntro                     string `json:"userIntro"`
+					UserMobileSkin                string `json:"userMobileSkin"`
+					UserListPageSize              int    `json:"userListPageSize"`
+					OId                           string `json:"oId"`
+					UserName                      string `json:"userName"`
+					UserGeoStatus                 int    `json:"userGeoStatus"`
+					UserLongestCheckinStreakStart int    `json:"userLongestCheckinStreakStart"`
+					UserSkin                      string `json:"userSkin"`
+					UserNotifyStatus              int    `json:"userNotifyStatus"`
+					UserFollowingUserStatus       int    `json:"userFollowingUserStatus"`
+					UserArticleCount              int    `json:"userArticleCount"`
+					UserRole                      string `json:"userRole"`
+				} `json:"commenter"`
+				PaginationCurrentPageNum  int    `json:"paginationCurrentPageNum"`
+				CommentAuthorName         string `json:"commentAuthorName"`
+				CommentThankCnt           int    `json:"commentThankCnt"`
+				CommentBadCnt             int    `json:"commentBadCnt"`
+				Rewarded                  bool   `json:"rewarded"`
+				CommentAuthorThumbnailURL string `json:"commentAuthorThumbnailURL"`
+				CommentAudioURL           string `json:"commentAudioURL"`
+				CommentQnAOffered         int    `json:"commentQnAOffered"`
+			} `json:"articleNiceComments"`
+			Rewarded                     bool    `json:"rewarded"`
+			ArticleHeat                  int     `json:"articleHeat"`
+			ArticlePerfect               int     `json:"articlePerfect"`
+			ArticleAuthorThumbnailURL210 string  `json:"articleAuthorThumbnailURL210"`
+			ArticlePermalink             string  `json:"articlePermalink"`
+			ArticleCity                  string  `json:"articleCity"`
+			ArticleShowInList            int     `json:"articleShowInList"`
+			IsMyArticle                  bool    `json:"isMyArticle"`
+			ArticleIP                    string  `json:"articleIP"`
+			ArticleEditorType            int     `json:"articleEditorType"`
+			ArticleVote                  int     `json:"articleVote"`
+			ArticleRandomDouble          float64 `json:"articleRandomDouble"`
+			ArticleAuthorId              string  `json:"articleAuthorId"`
+			ArticleBadCnt                int     `json:"articleBadCnt"`
+			ArticleAuthorURL             string  `json:"articleAuthorURL"`
+			IsWatching                   bool    `json:"isWatching"`
+			ArticleGoodCnt               int     `json:"articleGoodCnt"`
+			ArticleQnAOfferPoint         int     `json:"articleQnAOfferPoint"`
+			ArticleStickRemains          int     `json:"articleStickRemains"`
+			TimeAgo                      string  `json:"timeAgo"`
+			ArticleUpdateTimeStr         string  `json:"articleUpdateTimeStr"`
+			Offered                      bool    `json:"offered"`
+			ArticleWatchCnt              int     `json:"articleWatchCnt"`
+			ArticleTitleEmoj             string  `json:"articleTitleEmoj"`
+			ArticleTitleEmojUnicode      string  `json:"articleTitleEmojUnicode"`
+			ArticleAudioURL              string  `json:"articleAudioURL"`
+			ArticleAuthorThumbnailURL48  string  `json:"articleAuthorThumbnailURL48"`
+			Thanked                      bool    `json:"thanked"`
+			ArticleImg1URL               string  `json:"articleImg1URL"`
+			ArticlePushOrder             int     `json:"articlePushOrder"`
+			ArticleCollectCnt            int     `json:"articleCollectCnt"`
+			ArticleTitle                 string  `json:"articleTitle"`
+			IsFollowing                  bool    `json:"isFollowing"`
+			ArticleTags                  string  `json:"articleTags"`
+			OId                          string  `json:"oId"`
+			ArticleStick                 int     `json:"articleStick"`
+			ArticleTagObjs               []struct {
+				TagShowSideAd     int     `json:"tagShowSideAd"`
+				TagIconPath       string  `json:"tagIconPath"`
+				TagStatus         int     `json:"tagStatus"`
+				TagBadCnt         int     `json:"tagBadCnt"`
+				TagRandomDouble   float64 `json:"tagRandomDouble"`
+				TagTitle          string  `json:"tagTitle"`
+				OId               string  `json:"oId"`
+				TagURI            string  `json:"tagURI"`
+				TagAd             string  `json:"tagAd"`
+				TagGoodCnt        int     `json:"tagGoodCnt"`
+				TagCSS            string  `json:"tagCSS"`
+				TagCommentCount   int     `json:"tagCommentCount"`
+				TagFollowerCount  int     `json:"tagFollowerCount"`
+				TagSeoTitle       string  `json:"tagSeoTitle"`
+				TagLinkCount      int     `json:"tagLinkCount"`
+				TagSeoDesc        string  `json:"tagSeoDesc"`
+				TagReferenceCount int     `json:"tagReferenceCount"`
+				TagSeoKeywords    string  `json:"tagSeoKeywords"`
+				TagDescription    string  `json:"tagDescription"`
+			} `json:"articleTagObjs"`
+			ArticleAnonymous     int    `json:"articleAnonymous"`
+			ArticleThankCnt      int    `json:"articleThankCnt"`
+			ArticleRewardContent string `json:"articleRewardContent"`
+			RedditScore          int    `json:"redditScore"`
+			ArticleUpdateTime    string `json:"articleUpdateTime"`
+			ArticleStatus        int    `json:"articleStatus"`
+			ArticleAuthor        struct {
+				UserOnlineFlag                bool   `json:"userOnlineFlag"`
+				OnlineMinute                  int    `json:"onlineMinute"`
+				UserPointStatus               int    `json:"userPointStatus"`
+				UserFollowerStatus            int    `json:"userFollowerStatus"`
+				UserGuideStep                 int    `json:"userGuideStep"`
+				UserOnlineStatus              int    `json:"userOnlineStatus"`
+				UserCurrentCheckinStreakStart int    `json:"userCurrentCheckinStreakStart"`
+				ChatRoomPictureStatus         int    `json:"chatRoomPictureStatus"`
+				UserTags                      string `json:"userTags"`
+				SysMetal                      []struct {
+					Name        string `json:"name"`
+					Description string `json:"description"`
+					Data        string `json:"data"`
+					Attr        string `json:"attr"`
+					Enabled     bool   `json:"enabled"`
+				} `json:"sysMetal"`
+				UserCommentStatus             int    `json:"userCommentStatus"`
+				UserTimezone                  string `json:"userTimezone"`
+				UserURL                       string `json:"userURL"`
+				UserForwardPageStatus         int    `json:"userForwardPageStatus"`
+				UserUAStatus                  int    `json:"userUAStatus"`
+				UserIndexRedirectURL          string `json:"userIndexRedirectURL"`
+				UserLatestArticleTime         int64  `json:"userLatestArticleTime"`
+				UserTagCount                  int    `json:"userTagCount"`
+				UserNickname                  string `json:"userNickname"`
+				UserListViewMode              int    `json:"userListViewMode"`
+				UserLongestCheckinStreak      int    `json:"userLongestCheckinStreak"`
+				UserAvatarType                int    `json:"userAvatarType"`
+				UserSubMailSendTime           int64  `json:"userSubMailSendTime"`
+				UserUpdateTime                int64  `json:"userUpdateTime"`
+				UserSubMailStatus             int    `json:"userSubMailStatus"`
+				UserJoinPointRank             int    `json:"userJoinPointRank"`
+				UserLatestLoginTime           int64  `json:"userLatestLoginTime"`
+				UserAppRole                   int    `json:"userAppRole"`
+				UserAvatarViewMode            int    `json:"userAvatarViewMode"`
+				UserStatus                    int    `json:"userStatus"`
+				UserLongestCheckinStreakEnd   int    `json:"userLongestCheckinStreakEnd"`
+				UserWatchingArticleStatus     int    `json:"userWatchingArticleStatus"`
+				UserLatestCmtTime             int64  `json:"userLatestCmtTime"`
+				UserProvince                  string `json:"userProvince"`
+				UserCurrentCheckinStreak      int    `json:"userCurrentCheckinStreak"`
+				UserNo                        int    `json:"userNo"`
+				UserAvatarURL                 string `json:"userAvatarURL"`
+				UserFollowingTagStatus        int    `json:"userFollowingTagStatus"`
+				UserLanguage                  string `json:"userLanguage"`
+				UserJoinUsedPointRank         int    `json:"userJoinUsedPointRank"`
+				UserCurrentCheckinStreakEnd   int    `json:"userCurrentCheckinStreakEnd"`
+				UserFollowingArticleStatus    int    `json:"userFollowingArticleStatus"`
+				UserKeyboardShortcutsStatus   int    `json:"userKeyboardShortcutsStatus"`
+				UserReplyWatchArticleStatus   int    `json:"userReplyWatchArticleStatus"`
+				UserCommentViewMode           int    `json:"userCommentViewMode"`
+				UserBreezemoonStatus          int    `json:"userBreezemoonStatus"`
+				UserCheckinTime               int64  `json:"userCheckinTime"`
+				UserUsedPoint                 int    `json:"userUsedPoint"`
+				UserArticleStatus             int    `json:"userArticleStatus"`
+				UserPoint                     int    `json:"userPoint"`
+				UserCommentCount              int    `json:"userCommentCount"`
+				UserIntro                     string `json:"userIntro"`
+				UserMobileSkin                string `json:"userMobileSkin"`
+				UserListPageSize              int    `json:"userListPageSize"`
+				OId                           string `json:"oId"`
+				UserName                      string `json:"userName"`
+				UserGeoStatus                 int    `json:"userGeoStatus"`
+				UserLongestCheckinStreakStart int    `json:"userLongestCheckinStreakStart"`
+				UserSkin                      string `json:"userSkin"`
+				UserNotifyStatus              int    `json:"userNotifyStatus"`
+				UserFollowingUserStatus       int    `json:"userFollowingUserStatus"`
+				UserArticleCount              int    `json:"userArticleCount"`
+				UserRole                      string `json:"userRole"`
+			} `json:"articleAuthor"`
+		} `json:"article"`
+		Pagination struct {
+			PaginationPageCount int   `json:"paginationPageCount"` // 	评论分页数
+			PaginationPageNums  []int `json:"paginationPageNums"`  // 	建议分页页码
+		} `json:"pagination"` // 分页信息
+	} `json:"data"`
 }

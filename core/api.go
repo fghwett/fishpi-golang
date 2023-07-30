@@ -45,6 +45,12 @@ func (a *Api) revokeMessage(oId string) *url.URL {
 	return &u
 }
 
+func (a *Api) pointTransfer() *url.URL {
+	u := *a.u
+	u.Path = "/point/transfer"
+	return &u
+}
+
 func (a *Api) userCheckedIn() *url.URL {
 	u := *a.u
 	u.Path = "/user/checkedIn"
@@ -84,9 +90,10 @@ func (a *Api) isCollectedLiveness() *url.URL {
 	return &u
 }
 
-func (a *Api) getArticleInfo(articleId string) *url.URL {
+func (a *Api) getArticleInfo(data *ArticleInfoData) *url.URL {
 	u := *a.u
-	u.Path = fmt.Sprintf("/api/article/%s", articleId)
+	u.Path = fmt.Sprintf("/api/article/%s", data.ArticleId)
+	u.RawQuery = data.Query()
 	return &u
 }
 
