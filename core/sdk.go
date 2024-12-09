@@ -36,8 +36,21 @@ func NewSdk(api *Api, userAgent, apiKey, username string, logger logger.Logger) 
 	return c
 }
 
-func (c *Sdk) GetWsUrl() string {
-	return c.api.wss() + "?apiKey=" + c.apiKey
+func (c *Sdk) GetWsUrl() (string, error) {
+	body, err := c.get(c.api.chatroomNodeGet())
+	if err != nil {
+		return "", err
+	}
+
+	var reply ChatroomNodeGetReply
+	if err = json.Unmarshal(body, &reply); err != nil {
+		return "", err
+	}
+	if reply.Code != 0 {
+		return "", errors.New(reply.Msg)
+	}
+
+	return reply.Data, nil
 }
 
 // User 获取自己的信息
@@ -175,7 +188,7 @@ func (c *Sdk) SendMsg(msg string) error {
 	data := &sendMsgData{
 		ApiKey:  c.apiKey,
 		Content: msg,
-		Client:  "Golang/v0.0.2",
+		Client:  "Golang/v0.0.3",
 	}
 
 	body, err := c.post(c.api.sendMsg(), data)
@@ -467,7 +480,7 @@ func (c *Sdk) get(u *url.URL) ([]byte, error) {
 	q := u.Query()
 	q.Add("apiKey", c.apiKey)
 	u.RawQuery = q.Encode()
-	fmt.Println(u.String())
+	//fmt.Println(u.String())
 	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
 	if err != nil {
 		return nil, err

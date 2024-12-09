@@ -1019,3 +1019,15 @@ type ArticleInfoReply struct {
 		} `json:"pagination"` // 分页信息
 	} `json:"data"`
 }
+
+type ChatroomNodeGetReply struct {
+	Msg       string `json:"msg"`
+	Code      int    `json:"code"`
+	Data      string `json:"data"`
+	ApiKey    string `json:"apiKey"`
+	Avaliable []struct {
+		Node   string `json:"node"`
+		Name   string `json:"name"`
+		Online int    `json:"online"`
+	} `json:"avaliable"`
+}

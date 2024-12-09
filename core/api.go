@@ -129,6 +129,15 @@ func (a *Api) breezeMoonUser(username string, page, size int) *url.URL {
 	return &u
 }
 
+// 获取聊天室节点
+func (a *Api) chatroomNodeGet() *url.URL {
+	u := *a.u
+	u.Path = "/chat-room/node/get"
+	return &u
+}
+
+// Deprecated
+// 改为使用 chatroomNodeGet 接口获取对应的节点
 // 聊天室连接
 func (a *Api) wss() string {
 	u := *a.u

@@ -77,13 +77,18 @@ func main() {
 		eh.Sub(eventHandler.WsReconnectedFail, hl.HandleWsStatusMsg)
 
 		// 连接ws
-		u := fishPiSdk.GetWsUrl()
+		u, e := fishPiSdk.GetWsUrl()
+		if e != nil {
+			loger.Logf("获取聊天室节点失败 %s", err)
+			return
+		}
 		wsClient := ws.NewWs(u, conf.Settings.WsInterval, eh, loger)
 
 		if err = wsClient.Start(); err != nil {
 			loger.Logf("websocket连接失败 %s", err)
 			return
 		}
+		loger.Logf("已连接到节点 %s", u)
 		c := hl.KeepLive()
 		go hl.Watch()
 		for {
@@ -151,7 +156,11 @@ func main() {
 		eh.Sub(eventHandler.WsReconnectedFail, hl.HandleWsStatusMsg)
 
 		// 连接ws
-		u := fishPiSdk.GetWsUrl()
+		u, e := fishPiSdk.GetWsUrl()
+		if e != nil {
+			loger.Logf("获取聊天室节点失败 %s", err)
+			return
+		}
 		wsClient := ws.NewWs(u, conf.Settings.WsInterval, eh, loger)
 		eh.Sub(eventHandler.WsSend, wsClient.Send)
 
