@@ -1,0 +1,10 @@
+version: 3
+
+tasks:
+  release:
+    desc: 发布GitHub Release
+    cmds:
+#      - git tag -a v0.1.0 -m "First release"
+#      - git push origin v0.1.0
+      - goreleaser check
+      - goreleaser release
