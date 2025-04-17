@@ -8,3 +8,18 @@ tasks:
 #      - git push origin v0.1.0
       - goreleaser check
       - goreleaser release
+
+  simple:
+    desc: 以simple模式运行
+    cmds:
+      - go run main.go -conf _tmp/config.yaml -simple
+
+  ws:
+    desc: 以ws模式运行
+    cmds:
+      - go run main.go -conf _tmp/config.yaml -ws
+
+  msg:
+    desc: 以msg模式运行
+    cmds:
+      - go run main.go -conf _tmp/config.yaml -msg
