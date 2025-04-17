@@ -151,6 +151,7 @@ func main() {
 		hl := core.NewCore(conf.Settings.MsgCacheNum, conf.Elves.Token, fishPiSdk, eh)
 
 		eh.Sub(eventHandler.WsMsg, hl.HandleMsg)
+		//eh.Sub(eventHandler.WsMsg, logger.RecordMessage)
 		eh.Sub(eventHandler.WsConnected, hl.HandleWsStatusMsg)
 		eh.Sub(eventHandler.WsClosed, hl.HandleWsStatusMsg)
 		eh.Sub(eventHandler.WsReconnectedFail, hl.HandleWsStatusMsg)
