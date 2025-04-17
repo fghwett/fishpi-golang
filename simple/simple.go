@@ -244,23 +244,27 @@ func (u *Simple) handleMsg(msg *core.WsMsgReply) {
 		// todo 处理弹幕颜色 rgba(255,255,255,1)
 		message = fmt.Sprintf(`[#bbbbbb]%s发送了弹幕消息：[#bfbfbf](%s)[#bbbbbb]%s`, msg.UserNickname, msg.BarrageColor, msg.BarrageContent)
 	case core.WsMsgTypeMsg:
-		if rp := msg.RedPackageInfo; rp != nil && rp.Type != "" {
-			special := ""
-			if rp.Type == core.RedPacketTypeSpecify {
-				special = rp.Recivers
-			}
-			action := ""
-			if rp.Type == core.RedPacketTypeRockPaperScissors {
-				uid1 := u.addMessageRecord(msg, actionGestureStone)
-				uid2 := u.addMessageRecord(msg, actionGestureScissors)
-				uid3 := u.addMessageRecord(msg, actionGestureCloth)
-				rand := u.addMessageRecord(msg, actionGestureRand)
-				action = fmt.Sprintf(`[#ff0000]["%s"]石头[""] ["%s"]剪刀[""] ["%s"]布[""] ["%s"]随机[""]`, uid1, uid2, uid3, rand)
+		if rp := msg.JsonInfo; rp != nil && rp.MsgType != "" {
+			if rp.MsgType == core.JsonMsgTypeRedPacket {
+				special := ""
+				if rp.Type == core.RedPacketTypeSpecify {
+					special = rp.Recivers
+				}
+				action := ""
+				if rp.Type == core.RedPacketTypeRockPaperScissors {
+					uid1 := u.addMessageRecord(msg, actionGestureStone)
+					uid2 := u.addMessageRecord(msg, actionGestureScissors)
+					uid3 := u.addMessageRecord(msg, actionGestureCloth)
+					rand := u.addMessageRecord(msg, actionGestureRand)
+					action = fmt.Sprintf(`[#ff0000]["%s"]石头[""] ["%s"]剪刀[""] ["%s"]布[""] ["%s"]随机[""]`, uid1, uid2, uid3, rand)
+				} else {
+					uid := u.addMessageRecord(msg, actionRedPacket)
+					action = fmt.Sprintf(fmt.Sprintf(`[#ff0000]["%s"]打开[""]`, uid))
+				}
+				message = fmt.Sprintf("[#bfbfbf]%s [#bbbbbb]%s[#bfbfbf](%s)[#bbbbbb]: 我发了个[#ff0000]%s%s [#bbbbbb]里面有[#ff0000]%d[#bbbbbb]积分(%d/%d) %s", msg.Time[11:], msg.UserNickname, msg.UserName, rp.TypeName(), special, rp.Money, rp.Got, rp.Count, action)
 			} else {
-				uid := u.addMessageRecord(msg, actionRedPacket)
-				action = fmt.Sprintf(fmt.Sprintf(`[#ff0000]["%s"]打开[""]`, uid))
+				message = msg.Msg()
 			}
-			message = fmt.Sprintf("[#bfbfbf]%s [#bbbbbb]%s[#bfbfbf](%s)[#bbbbbb]: 我发了个[#ff0000]%s%s [#bbbbbb]里面有[#ff0000]%d[#bbbbbb]积分(%d/%d) %s", msg.Time[11:], msg.UserNickname, msg.UserName, rp.TypeName(), special, rp.Money, rp.Got, rp.Count, action)
 		} else if strings.Contains(msg.Content, "https://www.lingmx.com/card/index2.html") {
 			//message = msg.decodeWeatherMsg()
 		} else if strings.Contains(msg.Content, "https://www.lingmx.com/card/index.html") {

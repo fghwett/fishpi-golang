@@ -118,7 +118,7 @@ func (h *Handler) HandleMsg(data interface{}) {
 
 func (h *Handler) filterMessage(msg *WsMsgReply) {
 	if msg.IsRedPacketMsg() {
-		switch msg.RedPackageInfo.Type {
+		switch msg.JsonInfo.Type {
 		case RedPacketTypeSpecify:
 			h.own = msg
 		case RedPacketTypeRockPaperScissors:

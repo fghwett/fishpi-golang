@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"log/slog"
 	"math/rand"
 	"net/url"
 	"regexp"
@@ -253,18 +254,18 @@ type WsMsgReply struct {
 	OId string `json:"oId"` // 消息ID
 
 	// 聊天消息
-	Time             string         `json:"time"`             // 发布时间
-	UserName         string         `json:"userName"`         // 用户名
-	UserNickname     string         `json:"userNickname"`     // 用户昵称
-	UserAvatarURL    string         `json:"userAvatarURL"`    // 用户头像
-	UserAvatarURL20  string         `json:"userAvatarURL20"`  // 用户头像 20px
-	UserAvatarURL48  string         `json:"userAvatarURL48"`  // 用户头像 48px
-	UserAvatarURL210 string         `json:"userAvatarURL210"` // 用户邮箱 210px
-	SysMetal         string         `json:"sysMetal"`         // 徽章数据 json字符串
-	Content          string         `json:"content"`          // 消息内容 HTML格式 如果是红包则是JSON格式
-	Md               string         `json:"md"`               // 消息内容 Markdown格式，红包消息无此栏位
-	SysMetalInfo     *SysMetalInfo  // 徽章数据解析
-	RedPackageInfo   *RedPacketInfo // 红包消息数据
+	Time             string        `json:"time"`             // 发布时间
+	UserName         string        `json:"userName"`         // 用户名
+	UserNickname     string        `json:"userNickname"`     // 用户昵称
+	UserAvatarURL    string        `json:"userAvatarURL"`    // 用户头像
+	UserAvatarURL20  string        `json:"userAvatarURL20"`  // 用户头像 20px
+	UserAvatarURL48  string        `json:"userAvatarURL48"`  // 用户头像 48px
+	UserAvatarURL210 string        `json:"userAvatarURL210"` // 用户邮箱 210px
+	SysMetal         string        `json:"sysMetal"`         // 徽章数据 json字符串
+	Content          string        `json:"content"`          // 消息内容 HTML格式 如果是红包则是JSON格式
+	Md               string        `json:"md"`               // 消息内容 Markdown格式，红包消息无此栏位
+	SysMetalInfo     *SysMetalInfo // 徽章数据解析
+	JsonInfo         *JsonInfo     // json内容解析
 
 	// 红包领取消息
 	Count   int    `json:"count"`   // 红包个数
@@ -288,21 +289,21 @@ func (w *WsMsgReply) Parse() {
 		return
 	}
 
-	if w.Md != "" {
+	if strings.HasPrefix(w.Content, `{\"`) {
 		return
 	}
 
-	var rp RedPacketInfo
-	if err := json.Unmarshal([]byte(w.Content), &rp); err != nil {
-		log.Printf("解析红包数据失败：%s, content: %s\n", err, w.Content)
+	rp := new(JsonInfo)
+	if err := json.Unmarshal([]byte(w.Content), rp); err != nil {
+		slog.Info("解析JSON数据失败", slog.Any("err", err), slog.String("content", w.Content))
 		return
 	}
-	w.RedPackageInfo = &rp
+	w.JsonInfo = rp
 }
 
 func (w *WsMsgReply) IsRedPacketMsg() bool {
-	rp := w.RedPackageInfo
-	return rp != nil && rp.Type != ""
+	rp := w.JsonInfo
+	return rp != nil && rp.MsgType == JsonMsgTypeRedPacket
 }
 
 func (w *WsMsgReply) Msg() string {
@@ -315,12 +316,20 @@ func (w *WsMsgReply) Msg() string {
 	case WsMsgTypeBarrage:
 		result = fmt.Sprintf("%s发送了弹幕消息：(%s)%s", w.UserNickname, w.BarrageColor, w.BarrageContent)
 	case WsMsgTypeMsg:
-		if rp := w.RedPackageInfo; rp != nil && rp.Type != "" {
-			special := ""
-			if rp.Type == RedPacketTypeSpecify {
-				special = rp.Recivers
+		if rp := w.JsonInfo; rp != nil && rp.MsgType != "" {
+			if rp.MsgType == JsonMsgTypeRedPacket {
+				special := ""
+				if rp.Type == RedPacketTypeSpecify {
+					special = rp.Recivers
+				}
+				result = fmt.Sprintf("%s %s(%s): 我发了个%s%s 里面有%d积分(%d/%d)", w.Time[11:], w.UserNickname, w.UserName, rp.TypeName(), special, rp.Money, rp.Got, rp.Count)
+			} else if rp.MsgType == JsonMsgTypeWeather {
+				result = w.decodeJsonWeatherMsg()
+			} else if rp.MsgType == JsonMsgTypeMusic {
+				result = fmt.Sprintf("%s %s(%s): 让我们来听「%s」吧\n\t链接: %s\n\t封面: %s\n\t来源: %s", w.Time[11:], w.UserNickname, w.UserName, rp.Title, rp.Source, rp.CoverURL, rp.From)
+			} else {
+				result = fmt.Sprintf("%s %s(%s): 发送了未处理的JSON数据(%s)%s", w.Time[11:], w.UserNickname, w.UserName, rp.MsgType, w.Content)
 			}
-			result = fmt.Sprintf("%s %s(%s): 我发了个%s%s 里面有%d积分(%d/%d)", w.Time[11:], w.UserNickname, w.UserName, rp.TypeName(), special, rp.Money, rp.Got, rp.Count)
 		} else if strings.Contains(w.Content, "https://www.lingmx.com/card/index2.html") {
 			result = w.decodeWeatherMsg()
 		} else if strings.Contains(w.Content, "https://www.lingmx.com/card/index.html") {
@@ -442,6 +451,70 @@ func (w *WsMsgReply) decodeWeatherMsg() string {
 	return msg
 }
 
+func (w *WsMsgReply) decodeJsonWeatherMsg() string {
+	//msg := `{"date":"4/16,4/17,4/18","st":"未来24小时多云","min":"15.49,17.49,20.49","msgType":"weather","t":"厦门","max":"25.41,26.49,26.49","weatherCode":"PARTLY_CLOUDY_DAY,CLOUDY,CLOUDY","type":"weather"}`
+	msg := ``
+
+	weather := w.JsonInfo
+
+	weatherCodes := strings.Split(weather.WeatherCode, ",")
+
+	weatherMap := map[string]string{
+		"CLEAR_DAY":           "晴",
+		"CLEAR_NIGHT":         "晴",
+		"PARTLY_CLOUDY_DAY":   "多云 ",
+		"PARTLY_CLOUDY_NIGHT": "多云",
+		"CLOUDY":              "阴",
+		"LIGHT_HAZE":          "轻度雾霾",
+		"MODERATE_HAZE":       "中度雾霾",
+		"HEAVY_HAZE":          "重度雾霾",
+		"LIGHT_RAIN":          "小雨",
+		"MODERATE_RAIN":       "中雨",
+		"HEAVY_RAIN":          "大雨",
+		"STORM_RAIN":          "暴雨",
+		"FOG":                 "雾",
+		"LIGHT_SNOW":          "小雪",
+		"MODERATE_SNOW":       "中雪",
+		"HEAVY_SNOW":          "大雪",
+		"STORM_SNOW":          "暴雪",
+		"DUST":                "浮尘",
+		"SAND":                "沙尘",
+		"WIND":                "大风",
+	}
+
+	var weatherWords []string
+	for _, v := range weatherCodes {
+		var str string
+		if key, ok := weatherMap[v]; ok {
+			str = key
+		} else {
+			str = v
+		}
+		weatherWords = append(weatherWords, str)
+	}
+
+	data := [][]string{
+		weatherWords,
+		strings.Split(weather.Max, ","),
+		strings.Split(weather.Min, ","),
+	}
+
+	msg = fmt.Sprintf("%s天气\n", weather.T)
+	buffer := bytes.NewBufferString(msg)
+	table := tablewriter.NewWriter(buffer)
+	table.SetHeader(strings.Split(weather.Date, ","))
+	table.SetColumnAlignment([]int{tablewriter.ALIGN_CENTER, tablewriter.ALIGN_CENTER, tablewriter.ALIGN_CENTER, tablewriter.ALIGN_CENTER, tablewriter.ALIGN_CENTER})
+
+	for _, v := range data {
+		table.Append(v)
+	}
+	table.Render()
+	msg = string(buffer.Bytes())
+	msg += weather.St
+
+	return msg
+}
+
 // websocket 在线用户信息
 type OnlineUserInfo struct {
 	UserName         string `json:"userName"`         // 用户名
@@ -467,6 +540,10 @@ type MetalInfo struct {
 }
 
 const (
+	JsonMsgTypeRedPacket = "redPacket"
+	JsonMsgTypeWeather   = "weather"
+	JsonMsgTypeMusic     = "music"
+
 	RedPacketTypeRandom            = "random"            // 拼手气红包
 	RedPacketTypeAverage           = "average"           // 平分红包
 	RedPacketTypeSpecify           = "specify"           // 专属红包
@@ -474,36 +551,53 @@ const (
 	RedPacketTypeRockPaperScissors = "rockPaperScissors" // 猜拳红包
 )
 
-// websocket 红包信息解码
-type RedPacketInfo struct {
+// JsonInfo json的数据结构
+type JsonInfo struct {
+	// 消息类型 redPacket-红包 weather-天气 music-音乐
+	MsgType string `json:"msgType"`
+	/*
+		红包类型 random(拼手气红包), average(平分红包)，specify(专属红包)，heartbeat(心跳红包)，rockPaperScissors(猜拳红包)
+		天气类型 weather
+		音乐类型 music
+	*/
+	Type string `json:"type"`
+
 	Msg      string        `json:"msg"`      // 红包祝福语
 	Recivers string        `json:"recivers"` // 红包接收者用户名，专属红包有效
 	SenderId string        `json:"senderId"` // 发送者id
-	MsgType  string        `json:"msgType"`  // 固定 redPacket
 	Money    int           `json:"money"`    // 红包积分
 	Count    int           `json:"count"`    // 红包个数
-	Type     string        `json:"type"`     // 红包类型 random(拼手气红包), average(平分红包)，specify(专属红包)，heartbeat(心跳红包)，rockPaperScissors(猜拳红包)
 	Got      int           `json:"got"`      // 已领取个数
 	Who      []interface{} `json:"who"`      // 已领取者信息
+
+	Date        string `json:"date"`        // 日期
+	St          string `json:"st"`          // 一句话
+	Min         string `json:"min"`         // 最低温度
+	T           string `json:"t"`           // 城市
+	Max         string `json:"max"`         // 最高温度
+	WeatherCode string `json:"weatherCode"` // 天气
+
+	CoverURL string `json:"coverURL"` // 封面链接
+	From     string `json:"from"`     // 来源
+	Source   string `json:"source"`   // 音乐链接
+	Title    string `json:"title"`    // 音乐名
 }
 
-func (r *RedPacketInfo) TypeName() string {
-	var result string
-	switch r.Type {
-	case RedPacketTypeRandom:
-		result = "拼手气红包"
-	case RedPacketTypeAverage:
-		result = "平分红包"
-	case RedPacketTypeSpecify:
-		result = "专属红包"
-	case RedPacketTypeHeartbeat:
-		result = "心跳红包"
-	case RedPacketTypeRockPaperScissors:
-		result = "猜拳红包"
-	default:
-		result = "这我也不知道是什么红包" + r.Type
+func (jsonInfo *JsonInfo) TypeName() string {
+	names := map[string]string{
+		"random":            "拼手气红包",
+		"average":           "平分红包",
+		"specify":           "专属红包",
+		"heartbeat":         "心跳红包",
+		"rockPaperScissors": "猜拳红包",
+		"weather":           "天气",
+		"music":             "音乐",
 	}
-	return result
+	name, ok := names[jsonInfo.Type]
+	if ok {
+		return name
+	}
+	return fmt.Sprintf("未处理类型(%s.%s)", jsonInfo.MsgType, jsonInfo.Type)
 }
 
 type UserInfoReply struct {
