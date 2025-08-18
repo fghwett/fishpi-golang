@@ -3,13 +3,14 @@ package simple
 import (
 	"fishpi/core"
 	"fmt"
-	"github.com/gdamore/tcell/v2"
-	"github.com/google/uuid"
-	"github.com/rivo/tview"
 	"regexp"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/gdamore/tcell/v2"
+	"github.com/google/uuid"
+	"github.com/rivo/tview"
 )
 
 const (
@@ -218,15 +219,15 @@ func (u *Simple) updateView() {
 }
 
 func (u *Simple) addUserChatroom() {
-	u.pages.AddPage(pageUserChatroom, tview.NewBox().SetTitle(" 私聊界面 ").SetTitleAlign(tview.AlignRight).SetBorder(true), true, false)
+	u.pages.AddPage(pageUserChatroom, tview.NewBox().SetTitle(" 私聊界面 ").SetBackgroundColor(tcell.ColorDefault).SetTitleAlign(tview.AlignRight).SetBorder(true), true, false)
 }
 
 func (u *Simple) addMoonList() {
-	u.pages.AddPage(pageMoonList, tview.NewBox().SetTitle(" 明月清风界面 ").SetTitleAlign(tview.AlignRight).SetBorder(true), true, false)
+	u.pages.AddPage(pageMoonList, tview.NewBox().SetTitle(" 明月清风界面 ").SetBackgroundColor(tcell.ColorDefault).SetTitleAlign(tview.AlignRight).SetBorder(true), true, false)
 }
 
 func (u *Simple) addIceGame() {
-	u.pages.AddPage(pageIceGame, tview.NewBox().SetTitle(" 小冰游戏界面 ").SetTitleAlign(tview.AlignRight).SetBorder(true), true, false)
+	u.pages.AddPage(pageIceGame, tview.NewBox().SetTitle(" 小冰游戏界面 ").SetBackgroundColor(tcell.ColorDefault).SetTitleAlign(tview.AlignRight).SetBorder(true), true, false)
 }
 
 func (u *Simple) Stop() {
@@ -292,7 +293,9 @@ func (u *Simple) handleMsg(msg *core.WsMsgReply) {
 						strings.Contains(str, "下次更新时间") ||
 						strings.Contains(str, "https://unv-shield.librian.net/api/unv_shield") ||
 						strings.Contains(str, "EXP") ||
-						strings.Contains(str, "<span class='IceNet-") {
+						strings.Contains(str, "<span class='IceNet-") ||
+						(strings.Contains(str, "<!--") && strings.Contains(str, "-->")) ||
+						strings.Contains(str, "今天的活跃度是") {
 						continue
 					}
 					// 去除<span id = 'elves'></span>
