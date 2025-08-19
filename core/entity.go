@@ -16,6 +16,7 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/olekukonko/tablewriter"
+	"github.com/olekukonko/tablewriter/tw"
 )
 
 type sendMsgData struct {
@@ -437,9 +438,22 @@ func (w *WsMsgReply) decodeWeatherMsg() string {
 		}
 
 		buffer := bytes.NewBufferString(msg)
-		table := tablewriter.NewWriter(buffer)
-		table.SetHeader(strings.Split(u.Query().Get("date"), ","))
-		table.SetColumnAlignment([]int{tablewriter.ALIGN_CENTER, tablewriter.ALIGN_CENTER, tablewriter.ALIGN_CENTER, tablewriter.ALIGN_CENTER, tablewriter.ALIGN_CENTER})
+		table := tablewriter.NewTable(buffer,
+			tablewriter.WithConfig(tablewriter.Config{
+				Header: tw.CellConfig{
+					Alignment: tw.CellAlignment{
+						Global: tw.AlignCenter,
+					},
+				},
+				Row: tw.CellConfig{
+					Alignment: tw.CellAlignment{
+						Global: tw.AlignCenter,
+					},
+				},
+			}),
+		)
+		table.Header(strings.Split(u.Query().Get("date"), ","))
+		//table.SetColumnAlignment([]int{tablewriter.ALIGN_CENTER, tablewriter.ALIGN_CENTER, tablewriter.ALIGN_CENTER, tablewriter.ALIGN_CENTER, tablewriter.ALIGN_CENTER})
 
 		for _, v := range data {
 			table.Append(v)
@@ -501,9 +515,22 @@ func (w *WsMsgReply) decodeJsonWeatherMsg() string {
 
 	msg = fmt.Sprintf("%s天气\n", weather.T)
 	buffer := bytes.NewBufferString(msg)
-	table := tablewriter.NewWriter(buffer)
-	table.SetHeader(strings.Split(weather.Date, ","))
-	table.SetColumnAlignment([]int{tablewriter.ALIGN_CENTER, tablewriter.ALIGN_CENTER, tablewriter.ALIGN_CENTER, tablewriter.ALIGN_CENTER, tablewriter.ALIGN_CENTER})
+	table := tablewriter.NewTable(buffer,
+		tablewriter.WithConfig(tablewriter.Config{
+			Header: tw.CellConfig{
+				Alignment: tw.CellAlignment{
+					Global: tw.AlignCenter,
+				},
+			},
+			Row: tw.CellConfig{
+				Alignment: tw.CellAlignment{
+					Global: tw.AlignCenter,
+				},
+			},
+		}),
+	)
+	table.Header(strings.Split(weather.Date, ","))
+	//table.SetColumnAlignment([]int{tablewriter.ALIGN_CENTER, tablewriter.ALIGN_CENTER, tablewriter.ALIGN_CENTER, tablewriter.ALIGN_CENTER, tablewriter.ALIGN_CENTER})
 
 	for _, v := range data {
 		table.Append(v)
@@ -767,7 +794,7 @@ type ArticleInfoReply struct {
 					Data        string `json:"data"`
 					Attr        string `json:"attr"`
 					Enabled     bool   `json:"enabled"`
-				} `json:"sysMetal"` // 评论人的徽章
+				} `json:"sysMetal"`                                   // 评论人的徽章
 				CommentGoodCnt     int    `json:"commentGoodCnt"`     // 评论点赞数 0
 				CommentVisible     int    `json:"commentVisible"`     // 评论可见性 0
 				CommentOnArticleId string `json:"commentOnArticleId"` // 评论所在文章ID 1670463550914
@@ -841,7 +868,7 @@ type ArticleInfoReply struct {
 					UserFollowingUserStatus       int    `json:"userFollowingUserStatus"`
 					UserArticleCount              int    `json:"userArticleCount"`
 					UserRole                      string `json:"userRole"`
-				} `json:"commenter"` // 评论者信息
+				} `json:"commenter"`                                                                          // 评论者信息
 				CommentAuthorName                 string `json:"commentAuthorName"`                           // 评论者昵称
 				CommentThankCnt                   int    `json:"commentThankCnt"`                             // 评论感谢数 0
 				CommentBadCnt                     int    `json:"commentBadCnt"`                               // 评论踩数 0
