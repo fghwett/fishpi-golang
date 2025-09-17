@@ -294,6 +294,10 @@ func (w *WsMsgReply) Parse() {
 		return
 	}
 
+	if !strings.HasPrefix(w.Content, `{`) {
+		return
+	}
+
 	rp := new(JsonInfo)
 	if err := json.Unmarshal([]byte(w.Content), rp); err != nil {
 		slog.Info("解析JSON数据失败", slog.Any("err", err), slog.String("content", w.Content))
