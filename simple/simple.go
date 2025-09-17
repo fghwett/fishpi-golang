@@ -262,7 +262,7 @@ func (u *Simple) handleMsg(msg *core.WsMsgReply) {
 					uid := u.addMessageRecord(msg, actionRedPacket)
 					action = fmt.Sprintf(fmt.Sprintf(`[#ff0000]["%s"]打开[""]`, uid))
 				}
-				message = fmt.Sprintf("[#bfbfbf]%s [#bbbbbb]%s[#bfbfbf](%s)[#bbbbbb]: 我发了个[#ff0000]%s%s [#bbbbbb]里面有[#ff0000]%d[#bbbbbb]积分(%d/%d) %s", msg.Time[11:], msg.UserNickname, msg.UserName, rp.TypeName(), special, rp.Money, rp.Got, rp.Count, action)
+				message = fmt.Sprintf("[#bfbfbf]%s [#bbbbbb]%s[#bfbfbf](%s)[#bbbbbb]: %s[#ff0000]%s%s [#bbbbbb]里面有[#ff0000]%d[#bbbbbb]积分(%d/%d) %s", msg.Time[11:], msg.UserNickname, msg.UserName, rp.Msg, rp.TypeName(), special, rp.Money, rp.Got, rp.Count, action)
 			} else {
 				message = msg.Msg()
 			}
